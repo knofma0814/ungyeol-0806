@@ -167,6 +167,16 @@ function analyzeStructure(obj){
 function distribution(obj){const c={목:0,화:0,토:0,금:0,수:0};for(const k of ["year","month","day","hour"]){if(k==="hour"&&obj.__unknownTime)continue;const p=parts(obj[k]);if(!p.stem||!p.branch)continue;if(STEM_ELEMENT[p.stem])c[STEM_ELEMENT[p.stem]]++;for(const [s,w] of HIDDEN[p.branch]||[])c[STEM_ELEMENT[s]]+=w;}return c;}
 function analyzeStrength(obj){const d=parts(obj.day),day=STEM_ELEMENT[d.stem];if(!day)return {error:"일간 정보가 없습니다."};const c=distribution(obj);let support=0,other=0;for(const [e,v] of Object.entries(c)){const r=elementRelation(day,e);if(r==="비겁"||r==="인성")support+=v;else other+=v;}const ratio=support/(support+other||1);let label=ratio>=.65?"신강 경향":ratio>=.55?"다소 신강":ratio<=.35?"신약 경향":ratio<=.45?"다소 신약":"중화에 가까움";return {day,stem:d.stem,c,support,other,ratio,label};}
 function analyzeClimate(obj){const m=parts(obj.month).branch,s=SEASON[m];if(!s)return {error:"월지 정보가 없습니다."};const c=distribution(obj),temp=s[0]+c.화*.65-c.수*.65+c.목*.1,moist=s[1]+c.수*.65-c.화*.45-c.금*.15;const t=temp>=2?"열기가 강한 편":temp>=.8?"따뜻한 편":temp<=-2?"한기가 강한 편":temp<=-.8?"차가운 편":"한난이 비교적 중화";const h=moist>=1.5?"습기가 많은 편":moist>=.5?"습윤한 편":moist<=-1.5?"건조함이 강한 편":moist<=-.5?"건조한 편":"조습이 비교적 중화";const cand=[];if(temp<=-.8||moist>=.5)cand.push("화");if(temp>=.8||moist<=-.5)cand.push("수");const fire=c.화,water=c.수,metal=c.금,wood=c.목,earth=c.토;const monthQi=(HIDDEN[m]||[]).map(([stem,weight],i)=>({stem,weight,role:i===0?"본기":i===1?"중기":"여기"}));const exposed=[];for(const k of ["year","month","day","hour"]){if(k==="hour"&&obj.__unknownTime)continue;const stem=parts(obj[k]).stem;if(stem&&["병","정","임","계"].includes(stem))exposed.push(`${k==="year"?"년":k==="month"?"월":k==="day"?"일":"시"}간 ${stem}`);}const climateRoots=[];for(const k of ["year","month","day","hour"]){if(k==="hour"&&obj.__unknownTime)continue;const br=parts(obj[k]).branch;for(const [stem] of HIDDEN[br]||[])if(["병","정","임","계"].includes(stem))climateRoots.push(`${k==="year"?"년":k==="month"?"월":k==="day"?"일":"시"}지 ${br}의 ${stem}`);}const tempBasis=`월지 ${m}(${s[2]})의 계절 기운을 출발점으로 삼고, 화 ${fire.toFixed(2)}의 열기와 수 ${water.toFixed(2)}의 냉기를 함께 반영했습니다.`;const moistBasis=`수 ${water.toFixed(2)}의 습윤 작용, 화 ${fire.toFixed(2)}의 건조 작용, 금 ${metal.toFixed(2)}의 수렴·건조 경향을 비교했습니다.`;const tempMeaning=temp>=.8?"계절의 기본 기운에 열기가 더해져 따뜻하거나 뜨거운 쪽으로 기울 수 있습니다.":temp<=-.8?"계절의 냉기가 남아 차갑거나 서늘한 쪽으로 기울 수 있습니다.":"차고 뜨거운 기운이 한쪽으로 크게 치우치지 않는 편으로 읽힙니다.";const moistMeaning=moist>=.5?"수분과 습기가 상대적으로 남기 쉬운 구조로 볼 여지가 있습니다.":moist<=-.5?"수분을 말리거나 흩뜨리는 기운이 상대적으로 강해 건조 쪽을 살펴야 합니다.":"습윤과 건조가 어느 한쪽으로 크게 치우치지 않는 편입니다.";return {season:s[2],temp,moist,t,h,cand:[...new Set(cand)],tempBasis,moistBasis,tempMeaning,moistMeaning,monthQi,exposed,climateRoots,counts:{fire,water,metal,wood,earth}};}
+function analyzePattern(obj){
+ const st=analyzeStructure(obj);if(st.error)return st;
+ const hidden=HIDDEN[st.month.branch]||[];
+ const exposed=st.visible.filter(x=>x.name!=="일주");
+ const candidates=hidden.map(([stem,weight],i)=>({stem,weight,role:i===0?"본기":i===1?"중기":"여기",god:tenGod(st.day,stem)}))
+  .map(x=>({...x,exposed:exposed.filter(v=>v.stemGod===x.god&&v.stem!==st.day).map(v=>v.name+" "+v.stem)}));
+ const main=candidates[0]||null;
+ const names={"정관":"정관격","편관(칠살)":"칠살격","정재":"정재격","편재":"편재격","식신":"식신격","상관":"상관격","정인":"정인격","편인":"편인격","비견":"건록격","겁재":"양인격"};
+ return {monthBranch:st.month.branch,candidates,main,candidate:main?(names[main.god]||main.god+" 중심 구조"):"판정 자료 부족",mainExposed:!!main?.exposed.length};
+}
 function analyzeUseful(obj){
  const base=analyzeStrength(obj);if(base.error)return base;
  const climate=analyzeClimate(obj),structure=analyzeStructure(obj),pattern=analyzePattern(obj);
@@ -178,7 +188,7 @@ function analyzeUseful(obj){
  const climateCandidates=climate.cand.map(e=>({element:e,reason:e==="화"?"한기·습기를 덜어 주는 방향":"열기·건조를 조절하는 방향"}));
  const bridge=[];
  const present=Object.keys(base.c).filter(e=>base.c[e]>0);
- for(const [a,b] of [["목","토"],["土","水"],["수","화"],["화","금"],["금","목"]])if(present.includes(a)&&present.includes(b))bridge.push(a+"→"+b);
+ for(const [a,b] of [["목","토"],["토","수"],["수","화"],["화","금"],["금","목"]])if(present.includes(a)&&present.includes(b))bridge.push(a+"→"+b);
  const favorable=[...new Set([...climateCandidates.map(x=>x.element),...suppression])];
  return {...base,climate,pattern,supportSide,suppression,climateCandidates,bridge,favorable,
   avoid:ratio>=.58?["인성","비겁"].map(g=>Object.keys(base.c).find(e=>elementRelation(dayElement,e)===g)).filter(Boolean):ratio<=.42?["식상","재성","관성"].map(g=>Object.keys(base.c).find(e=>elementRelation(dayElement,e)===g)).filter(Boolean):[],
