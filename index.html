@@ -65,6 +65,7 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <section class="panel"><h2>대운</h2><div id="luckReport" class="report sub">원국 계산 후 표시됩니다.</div></section>
 <section class="panel"><h2>세운 조회</h2><div class="row"><div class="field"><label for="fortuneYear">분석 연도</label><select id="fortuneYear"></select></div><button class="secondary" id="fortuneButton">세운 계산</button></div><div id="yearReport" class="report"></div></section>
 
+<section class="panel"><h2>개인 사주 리포트</h2><p class="sub">나의 원국과 강약·조후·용신 후보·대운을 종합해 풀이합니다.</p><button id="fullReportButton" class="secondary">개인 리포트 만들기</button><button id="printButton" class="secondary">인쇄 / PDF 저장</button><div id="fullReport" class="report"></div></section>
 </div>
 <div id="compatPane" class="pane">
 <section class="panel">
@@ -83,10 +84,11 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <button id="compatibilityButton">궁합 분석하기</button><div id="compatibilityReport" class="report sub">본인 사주를 먼저 계산한 뒤 상대방 정보를 입력해 주세요.</div>
 </section>
 
-<section class="panel"><h2>개인 사주 리포트</h2><p class="sub">나의 원국과 강약·조후·용신 후보·대운을 종합해 풀이합니다.</p><button id="fullReportButton" class="secondary">개인 리포트 만들기</button><button id="printButton" class="secondary">인쇄 / PDF 저장</button><div id="fullReport" class="report"></div></section>
-</div>
+
 <section class="panel"><h2>궁합 종합 리포트</h2><p class="sub">두 사람의 원국을 각각 살핀 뒤 일간·배우자궁·오행·합충 관계를 종합합니다.</p><button id="compatReportButton" class="secondary">궁합 리포트 만들기</button><div id="compatFullReport" class="report"></div></section>
 </div>
+
+
 <footer class="sub" style="text-align:center;padding:20px">運結 · 전통 명리학 기반 참고 정보<br>미래를 확정하거나 중요한 결정을 대신하지 않습니다.</footer>
 </main>
 <script type="module">
