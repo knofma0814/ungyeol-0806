@@ -38,7 +38,7 @@ export default {
    const safe=messages.slice(-12).filter(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string"&&m.content.length<=1200);
    if(!safe.length||safe[safe.length-1].role!=="user")return json({error:"질문을 입력해 주세요."},400,allowed);
    const context=JSON.stringify(body.context||{}).slice(0,14000);
-   const upstream=await fetch(env.LLM_API_URL,{method:"POST",headers:{"Authorization":`Bearer ${env.LLM_API_KEY}`,"Content-Type":"application/json"},body:JSON.stringify({model:env.LLM_MODEL,temperature:0.75,max_tokens:1000,messages:[{role:"system",content:SYSTEM_PROMPT+"\\n\\n[이번 상담의 계산된 사주 문맥]\\n"+context},...safe]})});
+   const upstream=await fetch(env.LLM_API_URL,{method:"POST",headers:{"Authorization":`Bearer ${env.LLM_API_KEY}`,"Content-Type":"application/json"},body:JSON.stringify({model:env.LLM_MODEL,temperature:0.75,max_tokens:1000,messages:[{role:"system",content:SYSTEM_PROMPT+"\n\n[이번 상담의 계산된 사주 문맥]\n"+context},...safe]})});
    const result=await upstream.json().catch(()=>({}));
    if(!upstream.ok)return json({error:"AI 제공자 응답 오류("+upstream.status+"). 서버의 API 주소·모델·키 설정을 확인해 주세요."},502,allowed);
    const reply=result?.choices?.[0]?.message?.content;
