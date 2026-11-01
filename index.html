@@ -271,7 +271,7 @@ function compat(a,b){
  }}
  for(const key of keys){if(key==="hour"&&(a.__unknownTime||b.__unknownTime))continue;const x=parts(a[key]),y=parts(b[key]);if(x.stem&&y.stem){if(pairHas(STEM_COMB,x.stem,y.stem))rel.push(`${key} 천간합 (${x.stem}-${y.stem})`);if(pairHas(STEM_CLASH,x.stem,y.stem))rel.push(`${key} 천간충 (${x.stem}-${y.stem})`);}if(x.branch&&y.branch)for(const rr of relation(x.branch,y.branch))rel.push(`${key} 지지${rr} (${x.branch}-${y.branch})`);}
  const triadRelations=completeGroupRelations(entries,TRIADS,"삼합"),directionRelations=completeGroupRelations(entries,DIRECTIONS,"방합");
- const matchAmhap=(pairs,label)=>pairs.flatMap(([a,b])=>{const left=entries.filter(x=>x.branch===a),right=entries.filter(x=>x.branch===b);return left.flatMap(x=>right.filter(y=>x.side!==y.side).map(y=>`${x.side} ${x.position} ${a} - ${y.side} ${y.position} ${b}: ${label}`)).concat(right.flatMap(x=>left.filter(y=>x.side!==y.side).map(y=>`${x.side} ${x.position} ${b} - ${y.side} ${y.position} ${a}: ${label}`)));});
+ const matchAmhap=(pairs,label)=>pairs.flatMap(([a,b])=>{const left=entries.filter(x=>x.branch===a),right=entries.filter(x=>x.branch===b);return left.flatMap(x=>right.filter(y=>x.side!==y.side).map(y=>`${x.side} ${x.position} ${a} - ${y.side} ${y.position} ${b}: ${label}`));});
  const amhapPrimary=matchAmhap(AMHAP_PRIMARY,"암합(대표 정기 기준)"),amhapAlternate=matchAmhap(AMHAP_ALTERNATE,"암합(별도 전승 기준)");
  const dayA=STEM_ELEMENT[pa.stem],dayB=STEM_ELEMENT[pb.stem];
  return {pa,pb,dayA,dayB,dayRelation:elementRelation(dayA,dayB),dayGodAB:tenGod(pa.stem,pb.stem),dayGodBA:tenGod(pb.stem,pa.stem),rel,crossRel,triadRelations,directionRelations,amhapPrimary,amhapAlternate,spouse:relation(pa.branch,pb.branch),elems};
