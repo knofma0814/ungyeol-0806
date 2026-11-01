@@ -174,7 +174,8 @@ function analyzeStructure(obj){
   }
   if(a.branch&&b.branch)for(const kind of relation(a.branch,b.branch))branchPairs.push({a:nameA,b:nameB,kind,pair:a.branch+"-"+b.branch});
  }
- const transformations=analyzeTransformations(obj);\n const natalEntries=branchEntries(obj,"본인");
+ const transformations=analyzeTransformations(obj);
+ const natalEntries=branchEntries(obj,"본인");
  const completeNatal=(groups,name)=>groups.flatMap(g=>{
   const found=g.map(ch=>natalEntries.filter(x=>x.branch===ch));
   if(!found.every(x=>x.length))return [];
