@@ -75,7 +75,7 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <section class="panel ai-chat" id="aiCounselPanel">
  <div class="ai-chat-head"><div class="ai-orb">☾</div><div><strong>운결의 운명술사</strong><small>그대의 사주에 담긴 흐름을 함께 살펴보겠습니다.</small></div></div>
  <p class="sub">먼저 ‘나의 사주’를 계산하면 원국·강약·격국·용신·대운을 바탕으로 자유롭게 질문할 수 있습니다.</p>
- <div class="ai-config"><label for="aiEndpoint">AI 상담 서버 주소 (최초 1회 입력, 현재 화면에서만 유지)</label><input id="aiEndpoint" type="url" placeholder="https://your-worker.example.workers.dev/chat" autocomplete="url"><p class="sub">상담 서버를 별도로 연결해야 실제 AI 답변이 가능합니다. API 키는 이곳에 입력하지 마세요.</p></div>
+ <div class="ai-config"><label for="aiEndpoint">AI 상담 서버 주소 (새로고침하면 다시 입력)</label><input id="aiEndpoint" type="url" placeholder="https://your-worker.example.workers.dev/chat" autocomplete="url"><p class="sub">상담 서버를 별도로 연결해야 실제 AI 답변이 가능합니다. API 키는 이곳에 입력하지 마세요.</p></div>
  <div class="ai-suggestions"><button type="button" class="secondary" data-ai-question="내 사주의 가장 큰 특징과 타고난 기질을 풀어다오.">타고난 기질</button><button type="button" class="secondary" data-ai-question="올해 나의 직업운과 일의 흐름을 살펴다오.">올해 직업운</button><button type="button" class="secondary" data-ai-question="나의 재물운에서 기회와 주의할 점을 알려다오.">재물운</button><button type="button" class="secondary" data-ai-question="내 대운의 흐름과 앞으로 살펴볼 시기를 설명해다오.">대운의 흐름</button></div>
  <div id="aiMessages" class="ai-messages" aria-live="polite"><div class="ai-message assistant">어서 오너라, 그대. 사주를 먼저 펼쳐 놓으면 그 안에 담긴 기운의 흐름을 함께 읽어 보마. 무엇이 궁금한지 편히 물어보아라.</div></div>
  <div class="ai-compose"><textarea id="aiQuestion" rows="2" maxlength="1200" placeholder="그대의 운세에 관해 무엇이 궁금한가?"></textarea><button type="button" id="aiSendButton">물어보기</button></div>
