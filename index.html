@@ -32,6 +32,10 @@ table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}th,td{padd
 .tabbar{display:flex;gap:8px;margin:18px 0;position:sticky;top:0;z-index:5;background:#0b1713;padding:8px;border:1px solid var(--line);border-radius:13px}.tabbar button{flex:1;margin:0;background:#1b3027;color:var(--muted);border:1px solid var(--line);padding:11px 8px}.tabbar button.active{background:linear-gradient(135deg,#d9bd82,#a98b55);color:#17231c;border-color:var(--gold)}.pane{display:none}.pane.active{display:block}.explain{padding:12px 14px;margin:10px 0;background:#0d1b15;border:1px solid var(--line);border-radius:9px}.explain b{color:var(--gold)}.report h3{margin-top:22px}.report .lead{font-size:15px;color:var(--ink);font-weight:600}.report .basis{color:var(--muted);font-size:13px}.ok{color:#a8d2a8}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:9px}.mini{background:#0e1d16;border:1px solid var(--line);border-radius:10px;padding:12px}.mini b{display:block;color:var(--gold);font-size:12px}.mini strong{font-size:20px}
 hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 @media(min-width:650px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}main{padding-left:20px;padding-right:20px}}
+
+/* 운결 AI 운명술사 상담 */
+.ai-chat{margin-top:18px}.ai-chat-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}.ai-orb{width:38px;height:38px;display:grid;place-items:center;border:1px solid #8f784d;border-radius:50%;background:radial-gradient(circle,#5a4930,#17271f);color:#e8ce98;font-size:20px}.ai-chat-head strong{color:var(--gold)}.ai-chat-head small{display:block;color:var(--muted);font-size:12px}.ai-config{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0d1b15}.ai-config label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}.ai-config input{font-size:13px}.ai-messages{display:flex;flex-direction:column;gap:10px;max-height:460px;overflow:auto;padding:12px;background:#0c1913;border:1px solid var(--line);border-radius:12px}.ai-message{max-width:92%;padding:11px 13px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}.ai-message.assistant{align-self:flex-start;background:#20372b;border:1px solid #3d5745}.ai-message.user{align-self:flex-end;background:#4b412e;border:1px solid #806d46}.ai-compose{display:flex;gap:8px;align-items:flex-end;margin-top:10px}.ai-compose textarea{flex:1;min-width:0;resize:vertical;min-height:48px;max-height:130px;background:#0d1b15;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit}.ai-compose button{margin:0;white-space:nowrap}.ai-suggestions{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.ai-suggestions button{margin:0;padding:7px 10px;font-size:12px}.ai-status{min-height:22px;margin-top:8px;color:var(--muted);font-size:12px}.ai-note{color:var(--muted);font-size:12px;margin-top:12px}
+@media(max-width:520px){.ai-compose{align-items:stretch}.ai-compose button{padding:10px}.ai-message{max-width:96%}}
 </style>
 </head>
 <body>
@@ -66,6 +70,18 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <section class="panel"><h2>억부용신 후보 참고</h2><div id="usefulReport" class="report sub">원국 계산 후 표시됩니다.</div></section>
 <section class="panel"><h2>대운</h2><div id="luckReport" class="report sub">원국 계산 후 표시됩니다.</div></section>
 <section class="panel"><h2>세운 조회</h2><div class="row"><div class="field"><label for="fortuneYear">분석 연도</label><select id="fortuneYear"></select></div><button class="secondary" id="fortuneButton">세운 계산</button></div><div id="yearReport" class="report"></div></section>
+
+
+<section class="panel ai-chat" id="aiCounselPanel">
+ <div class="ai-chat-head"><div class="ai-orb">☾</div><div><strong>운결의 운명술사</strong><small>그대의 사주에 담긴 흐름을 함께 살펴보겠습니다.</small></div></div>
+ <p class="sub">먼저 ‘나의 사주’를 계산하면 원국·강약·격국·용신·대운을 바탕으로 자유롭게 질문할 수 있습니다.</p>
+ <div class="ai-config"><label for="aiEndpoint">AI 상담 서버 주소 (최초 1회 입력, 현재 화면에서만 유지)</label><input id="aiEndpoint" type="url" placeholder="https://your-worker.example.workers.dev/chat" autocomplete="url"><p class="sub">상담 서버를 별도로 연결해야 실제 AI 답변이 가능합니다. API 키는 이곳에 입력하지 마세요.</p></div>
+ <div class="ai-suggestions"><button type="button" class="secondary" data-ai-question="내 사주의 가장 큰 특징과 타고난 기질을 풀어다오.">타고난 기질</button><button type="button" class="secondary" data-ai-question="올해 나의 직업운과 일의 흐름을 살펴다오.">올해 직업운</button><button type="button" class="secondary" data-ai-question="나의 재물운에서 기회와 주의할 점을 알려다오.">재물운</button><button type="button" class="secondary" data-ai-question="내 대운의 흐름과 앞으로 살펴볼 시기를 설명해다오.">대운의 흐름</button></div>
+ <div id="aiMessages" class="ai-messages" aria-live="polite"><div class="ai-message assistant">어서 오너라, 그대. 사주를 먼저 펼쳐 놓으면 그 안에 담긴 기운의 흐름을 함께 읽어 보마. 무엇이 궁금한지 편히 물어보아라.</div></div>
+ <div class="ai-compose"><textarea id="aiQuestion" rows="2" maxlength="1200" placeholder="그대의 운세에 관해 무엇이 궁금한가?"></textarea><button type="button" id="aiSendButton">물어보기</button></div>
+ <div id="aiStatus" class="ai-status" role="status"></div>
+ <p class="ai-note">상담은 전통 명리학을 바탕으로 한 참고 해석입니다. 운명을 단정하거나 의료·법률·재정 전문가의 판단을 대신하지 않습니다. 출생 원국 정보는 질문에 답하기 위한 문맥으로만 전송되며 이 앱 자체에는 저장하지 않습니다.</p>
+</section>
 
 <section class="panel"><h2>개인 사주 리포트</h2><p class="sub">나의 원국과 강약·조후·용신 후보·대운을 종합해 풀이합니다.</p><button id="fullReportButton" class="secondary">개인 리포트 만들기</button><button id="printButton" class="secondary">인쇄 / PDF 저장</button><div id="fullReport" class="report"></div></section>
 </div>
@@ -487,7 +503,44 @@ async function compatFullReport(){
  <h3>8. 합과 충을 함께 본 관계의 장점과 과제</h3><p>현재 확인된 천간합·육합·반합·삼합·방합 관계는 ${harmony}건, 천간충·지지 충형파해 관계는 ${tension}건입니다. 다만 관계의 개수를 단순 비교해 궁합의 점수로 환산할 수는 없습니다. 어느 기둥에서 나타났는지, 다른 합충과 겹치는지, 각자의 원국에서 해당 글자가 어떤 역할을 하는지가 더 중요합니다.</p><p>두 사람의 장점은 서로 다른 관점과 생활 방식을 통해 새로운 균형을 배울 수 있다는 데 있습니다. 과제는 차이를 상대의 잘못으로 해석하지 않고, 실제 생활에서 조정할 수 있는 약속으로 바꾸는 것입니다.</p>
  <h3>9. 관계를 부드럽게 만드는 명리학적·생활 조언</h3><p>명리학적으로는 한쪽의 기운이 다른 쪽을 일방적으로 채워 준다고 보기보다, 각자의 원국에서 필요한 기운이 무엇인지 먼저 살피는 것이 중요합니다. 서로에게 없는 오행을 무조건 보충하려 하기보다 그 기운이 두 사람 모두에게 편안하게 작용하는지 확인해야 합니다.</p><p>생활에서는 잘 맞는 순간을 늘리는 것만큼 갈등이 생겼을 때 회복하는 방식을 만드는 것이 중요합니다. 고마움은 구체적으로 표현하고, 약속은 지킬 수 있는 수준으로 정하며, 다툼 뒤에는 누가 이겼는지가 아니라 무엇을 바꿀지를 함께 정해 보세요.</p><div class="notice">이 리포트는 계산된 원국과 현재 구현된 관계 비교를 쉽게 설명한 참고 해석입니다. 암합은 대표 정기 기준과 별도 전승 기준을 나누어 표시하며, 원진 및 합화의 정밀 판정에는 학파별 차이가 남아 있습니다. 반합·삼합·방합은 현재 구현한 교차 지지 규칙에 따라 표시하며, 학파별 차이가 있을 수 있습니다. 궁합은 관계의 미래를 확정하지 않으며 실제 관계는 두 분의 선택과 행동에 달려 있습니다.</div>`);
 }
-function init(){const y=$("fortuneYear");$("personalTab").addEventListener("click",()=>{ $("personalTab").classList.add("active");$("compatTab").classList.remove("active");$("personalPane").classList.add("active");$("compatPane").classList.remove("active"); });$("compatTab").addEventListener("click",()=>{ $("compatTab").classList.add("active");$("personalTab").classList.remove("active");$("compatPane").classList.add("active");$("personalPane").classList.remove("active"); });$("compatReportButton").addEventListener("click",compatFullReport);const now=new Date().getFullYear();for(let n=now-5;n<=now+10;n++){const o=document.createElement("option");o.value=n;o.textContent=n+"년";if(n===now)o.selected=true;y.append(o);}for(const [id,fields] of [["timeMode",["hourField","minuteField"]],["partnerTimeMode",["partnerHourField","partnerMinuteField"]]]){const sync=()=>fields.forEach(field=>$(field).classList.toggle("hidden",$(id).value==="unknown"));$(id).addEventListener("change",sync);sync();}for(const [id,field] of [["calendarType","leapField"],["partnerCalendar","partnerLeapField"]]){$(id).addEventListener("change",()=>$(field).classList.toggle("hidden",$(id).value!=="lunar"));$(field).classList.toggle("hidden",$(id).value!=="lunar");}$("calculateButton").addEventListener("click",calculateMain);$("compatibilityButton").addEventListener("click",calcPartner);$("fortuneButton").addEventListener("click",calcYear);$("fullReportButton").addEventListener("click",fullReport);$("printButton").addEventListener("click",()=>window.print());}
+
+// ---- 운결 AI 운명술사 상담 ----
+let aiConversation=[];
+function aiContext(){
+ if(!natalObj)throw Error("먼저 ‘나의 사주’를 계산해 주어라.");
+ const strength=analyzeStrength(natalObj),climate=analyzeClimate(natalObj),useful=analyzeUseful(natalObj),pattern=analyzePattern(natalObj),final=finalizeYongshin(natalObj);
+ const luck=natalResult?.luckPillars;
+ const context={
+  chart:{year:natalObj.year,month:natalObj.month,day:natalObj.day,hour:natalObj.__unknownTime?"출생 시간 미상":natalObj.hour||"미상",unknownBirthTime:!!natalObj.__unknownTime},
+  dayMaster:{stem:strength.stem,element:strength.day},
+  strength:{label:strength.label,ratio:Number((strength.ratio*100).toFixed(1)),monthRelation:strength.monthRelation,scoreNote:strength.scoreNote},
+  climate:{season:climate.season,temperature:climate.t,moisture:climate.h},
+  pattern:{candidate:pattern.candidate,monthBranch:pattern.month?.branch,monthMain:pattern.main?.stem,monthGod:pattern.main?.god,mainExposed:pattern.main?.exposed,breakFactors:pattern.breakFactors||[]},
+  useful:{climateCandidates:useful.climateCandidates?.map(x=>x.element)||[],suppression:useful.suppression||[],bridge:useful.bridge?.map(x=>({conflict:x.conflict,element:x.element,present:x.present}))||[]},
+  yongshin:{element:final.finalYongshin,confidence:final.confidence,reasons:final.reasons?.[final.finalYongshin]||[],favorable:final.favorable||[],unfavorable:final.unfavorable||[],note:final.finalNote},
+  luck:luck?{direction:luck.forward?"순행":"역행",startAge:luck.startAge,pillars:(luck.pillars||[]).slice(0,10).map(x=>({pillar:x.korean||x.pillar,age:x.age}))}:null,
+  calculationLimits:["출생 시간이 미상이면 시주를 해석하지 말 것","용신은 운결의 통합 휴리스틱 판정이며 확정적·학계 공통의 정답으로 표현하지 말 것","강약·조후 수치는 참고 지표이며 격국 성패·합화의 모든 조건을 정밀 판정한 결과가 아님"]
+ };
+ if(partnerObj){const ps=analyzeStrength(partnerObj),pf=finalizeYongshin(partnerObj);context.compatibility={partnerChart:{year:partnerObj.year,month:partnerObj.month,day:partnerObj.day,hour:partnerObj.__unknownTime?"출생 시간 미상":partnerObj.hour||"미상"},partnerDayMaster:{stem:ps.stem,element:ps.day},partnerStrength:ps.label,partnerYongshin:pf.finalYongshin,partnerYongshinConfidence:pf.confidence};}
+ return context;
+}
+function addAIMessage(role,content){const box=$("aiMessages"),el=document.createElement("div");el.className="ai-message "+role;el.textContent=content;box.append(el);box.scrollTop=box.scrollHeight;}
+async function sendAIQuestion(prefill){
+ const input=$("aiQuestion"),question=String(prefill??input.value).trim(),endpoint=$("aiEndpoint").value.trim(),btn=$("aiSendButton");
+ if(!question)return;
+ if(!endpoint){$("aiStatus").textContent="먼저 AI 상담 서버 주소를 연결해 주어라. 서버 연결 안내는 저장소의 AI_SETUP.md에 적혀 있느니라.";return;}
+ let context;try{context=aiContext();}catch(e){$("aiStatus").textContent=e.message;return;}
+ if(!/^https:\/\//i.test(endpoint)){ $("aiStatus").textContent="보안을 위해 https 주소만 사용할 수 있느니라.";return; }
+ addAIMessage("user",question);input.value="";aiConversation.push({role:"user",content:question});aiConversation=aiConversation.slice(-12);btn.disabled=true;$("aiStatus").textContent="사주의 흐름을 살피는 중이니 잠시 기다려다오…";
+ try{
+  const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:aiConversation,context})});
+  const data=await response.json().catch(()=>({}));if(!response.ok)throw Error(data.error||"상담 서버에서 답을 받지 못했느니라.");
+  const answer=String(data.reply||"응답이 비어 있구나. 잠시 뒤 다시 물어보아라.");addAIMessage("assistant",answer);aiConversation.push({role:"assistant",content:answer});aiConversation=aiConversation.slice(-12);$("aiStatus").textContent="";
+ }catch(e){$("aiStatus").textContent="상담을 이어가지 못했느니라: "+(e.message||"연결 오류");}
+ finally{btn.disabled=false;input.focus();}
+}
+
+function init(){const y=$("fortuneYear");$("personalTab").addEventListener("click",()=>{ $("personalTab").classList.add("active");$("compatTab").classList.remove("active");$("personalPane").classList.add("active");$("compatPane").classList.remove("active"); });$("compatTab").addEventListener("click",()=>{ $("compatTab").classList.add("active");$("personalTab").classList.remove("active");$("compatPane").classList.add("active");$("personalPane").classList.remove("active"); });$("compatReportButton").addEventListener("click",compatFullReport);const now=new Date().getFullYear();for(let n=now-5;n<=now+10;n++){const o=document.createElement("option");o.value=n;o.textContent=n+"년";if(n===now)o.selected=true;y.append(o);}for(const [id,fields] of [["timeMode",["hourField","minuteField"]],["partnerTimeMode",["partnerHourField","partnerMinuteField"]]]){const sync=()=>fields.forEach(field=>$(field).classList.toggle("hidden",$(id).value==="unknown"));$(id).addEventListener("change",sync);sync();}for(const [id,field] of [["calendarType","leapField"],["partnerCalendar","partnerLeapField"]]){$(id).addEventListener("change",()=>$(field).classList.toggle("hidden",$(id).value!=="lunar"));$(field).classList.toggle("hidden",$(id).value!=="lunar");}$("calculateButton").addEventListener("click",calculateMain);$("compatibilityButton").addEventListener("click",calcPartner);$("fortuneButton").addEventListener("click",calcYear);$("fullReportButton").addEventListener("click",fullReport);$("printButton").addEventListener("click",()=>window.print());$("aiSendButton").addEventListener("click",()=>sendAIQuestion());$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAIQuestion();}});document.querySelectorAll("[data-ai-question]").forEach(b=>b.addEventListener("click",()=>sendAIQuestion(b.dataset.aiQuestion)));}
 init();
 </script>
 <script>
