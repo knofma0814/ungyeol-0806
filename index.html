@@ -161,7 +161,7 @@ function relation(a,b){const out=[];for(const [name,pairs] of Object.entries(PAI
 function compat(a,b){
  const pa=parts(a.day),pb=parts(b.day),elems=compareElements(a,b),rel=[],crossRel=[];
  const keys=["year","month","day","hour"];
- for(const ka of keys){if(ka==="hour"&&a.__unknownTime)continue;const x=parts(a[ka]);for(const kb of keys){if(kb==="hour"&&b.__unknownTime)continue;const y=parts(b[kb]);const label=`${ka}주-상대 ${kb}주`;
+ for(const ka of keys){if(ka==="hour"&&a.__unknownTime)continue;const x=parts(a[ka]);for(const kb of keys){if(kb==="hour"&&b.__unknownTime)continue;if(ka===kb)continue;const y=parts(b[kb]);const label=`${ka}주-상대 ${kb}주`;
   if(x.stem&&y.stem){if(pairHas(STEM_COMB,x.stem,y.stem))crossRel.push(`${label}: 천간합 ${x.stem}-${y.stem}`);if(pairHas(STEM_CLASH,x.stem,y.stem))crossRel.push(`${label}: 천간충 ${x.stem}-${y.stem}`);}
   if(x.branch&&y.branch)for(const rr of relation(x.branch,y.branch))crossRel.push(`${label}: 지지${rr} ${x.branch}-${y.branch}`);
  }}
