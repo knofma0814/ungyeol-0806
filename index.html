@@ -270,7 +270,16 @@ function compat(a,b){
 }
 function compareElements(a,b){const x=distribution(a),y=distribution(b),o={};for(const e of Object.keys(x))o[e]=[x[e].toFixed(2),y[e].toFixed(2)];return o;}
 async function calcPartner(){try{if(!natalObj)throw Error("먼저 본인 사주를 계산해 주세요.");const input=buildInput("partner");const calc=await loadEngine();partnerResult=calc({...input});partnerObj={...partnerResult.toObject(),__unknownTime:input.unknown};const r=compat(natalObj,partnerObj);show("compatibilityReport",`<p>본인 일간: ${r.pa.stem}(${r.dayA}) · 상대방 일간: ${r.pb.stem}(${r.dayB})</p><p>일간 오행 관계: <b>${r.dayRelation}</b></p><p>상대방 일간은 본인에게 ${r.dayGodAB}, 본인 일간은 상대방에게 ${r.dayGodBA}로 작용합니다(일간 기준 십성).</p><p>배우자궁(일지) 관계: ${r.spouse.join(" · ")||"별도 관계 없음"}</p><h3>기둥별 합·충·형·파·해</h3>${r.rel.map(x=>`<p>${escapeHTML(x)}</p>`).join("")||"<p>표시할 교차 관계가 없습니다.</p>"}<h3>오행 분포 비교</h3><table><thead><tr><th>오행</th><th>본인</th><th>상대방</th></tr></thead><tbody>${Object.entries(r.elems).map(([e,v])=>`<tr><td>${e}</td><td>${v[0]}</td><td>${v[1]}</td></tr>`).join("")}</tbody></table><p class="muted">기초 교차 비교입니다. 삼합·방합·반합 및 합화 조건, 각자의 용신과 대운은 아직 종합하지 않았습니다.</p>`);}catch(e){show("compatibilityReport",`<span class="error">${escapeHTML(e.message||e)}</span>`);}}
-async function calcYear(){try{if(!natalObj)throw Error("먼저 본인 사주를 계산해 주세요.");const year=Number($("fortuneYear").value),calc=await loadEngine();const r=calc({year,month:7,day:1,hour:12,minute:0,isLunar:false,isLeapMonth:false,gender:"male",dayBoundary:"midnight"});const obj=r.toObject(),p=parts(obj.year),day=parts(natalObj.day),rel=elementRelation(STEM_ELEMENT[day.stem],STEM_ELEMENT[p.stem]);show("yearReport",`<h3>${year}년 세운 ${escapeHTML(obj.year)}</h3><p>세운 천간 ${p.stem}(${STEM_ELEMENT[p.stem]}) · 지지 ${p.branch}</p><p>일간과 천간 관계: ${rel}</p><p class="muted">해당 연도의 7월 1일을 기준으로 연주를 가져옵니다. 입춘 전후의 연도 경계와 지지의 합충은 별도 검토가 필요합니다.</p>`);}catch(e){show("yearReport",`<span class="error">${escapeHTML(e.message||e)}</span>`);}}
+async function calcYear(){
+ try{
+  if(!natalObj)throw Error("먼저 본인 사주를 계산해 주세요.");
+  const year=Number($("fortuneYear").value),calc=await loadEngine();
+  const r=calc({year,month:7,day:1,hour:12,minute:0,isLunar:false,isLeapMonth:false,gender:"male",dayBoundary:"midnight"});
+  const obj=r.toObject(),p=parts(obj.year),day=parts(natalObj.day),god=tenGod(day.stem,p.stem);
+  const interactions=branchEntries(natalObj,"본인").flatMap(x=>relation(x.branch,p.branch).map(kind=>x.position+" "+x.branch+"와 세운 지지 "+p.branch+"의 "+kind));
+  show("yearReport",`<h3>${year}년 세운 ${escapeHTML(obj.year)}</h3><p><b>세운 천간:</b> ${p.stem}(${STEM_ELEMENT[p.stem]}) · 일간 기준 십성 <b>${god}</b></p><p><b>세운 지지:</b> ${p.branch} · 원국 지지와의 관계</p><ul>${interactions.length?interactions.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>현재 원국 지지와 직접 확인되는 합·충·형·파·해 관계가 없습니다.</li>"}</ul><p><b>세운 천간의 오행 관계:</b> ${elementRelation(STEM_ELEMENT[day.stem],STEM_ELEMENT[p.stem])}</p><p class="muted">선택 연도의 7월 1일을 기준으로 만세력 엔진에서 연주를 가져옵니다. 연주는 입춘을 경계로 바뀌므로 1~2월 초 출생이나 특정 날짜의 실제 세운 적용은 별도 확인이 필요합니다. 세운의 길흉은 원국·대운·용신을 함께 보아야 하며, 합충 한두 개만으로 사건을 예측하지 않습니다.</p>`);
+ }catch(e){show("yearReport",`<span class="error">${escapeHTML(e.message||e)}</span>`);}
+}
 function fullReport(){
  if(!natalObj){show("fullReport","먼저 본인 사주를 계산해 주세요.");return;}
  const s=analyzeStrength(natalObj),c=analyzeClimate(natalObj),u=analyzeUseful(natalObj),st=analyzeStructure(natalObj);
