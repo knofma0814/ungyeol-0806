@@ -1,7 +1,15 @@
-// 운결 AI 상담 API — OpenAI Responses API endpoint
-// API key는 반드시 Cloudflare Worker Secret(OPENAI_API_KEY)에 보관합니다.
-const corsHeaders = origin => ({ "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Vary": "Origin" });
-const json = (data, status, origin) => new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders(origin) } });
+// 운결 AI 상담 API — Google Gemini Developer API 중계 서버
+// GEMINI_API_KEY는 반드시 Cloudflare Worker Secret에 보관합니다.
+const corsHeaders = origin => ({
+ "Access-Control-Allow-Origin": origin,
+ "Access-Control-Allow-Methods": "POST, OPTIONS",
+ "Access-Control-Allow-Headers": "Content-Type",
+ "Vary": "Origin"
+});
+const json = (data, status, origin) => new Response(JSON.stringify(data), {
+ status,
+ headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders(origin) }
+});
 const SYSTEM_PROMPT = `너는 한국 전통 명리학 상담 서비스 '운결(運結)'의 운명술사다.
 [말투와 인격]
 - 신비롭고 차분하며 지혜로운 운명술사의 말투를 일관되게 사용한다.
@@ -27,23 +35,63 @@ const SYSTEM_PROMPT = `너는 한국 전통 명리학 상담 서비스 '운결(�
 - context에 있는 근거만 구체적으로 언급한다.`;
 export default {
  async fetch(request, env) {
-  const origin=request.headers.get("Origin")||"", allowed=env.ALLOWED_ORIGIN||"";
-  if(!allowed||origin!==allowed)return new Response("Origin not allowed",{status:403});
-  if(request.method==="OPTIONS")return new Response(null,{status:204,headers:corsHeaders(allowed)});
-  if(request.method!=="POST")return json({error:"POST 요청만 허용합니다."},405,allowed);
-  if(!env.OPENAI_API_KEY||!env.OPENAI_MODEL)return json({error:"OpenAI API 키 또는 모델 설정이 완료되지 않았습니다."},503,allowed);
+  const origin = request.headers.get("Origin") || "";
+  const allowed = env.ALLOWED_ORIGIN || "";
+  if (!allowed || origin !== allowed) return new Response("Origin not allowed", { status: 403 });
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(allowed) });
+  if (request.method !== "POST") return json({ error: "POST 요청만 허용합니다." }, 405, allowed);
+  if (!env.GEMINI_API_KEY) return json({ error: "Gemini API 키 설정이 완료되지 않았습니다." }, 503, allowed);
   try {
-   const raw=await request.text();if(raw.length>30000)return json({error:"요청 내용이 너무 깁니다."},413,allowed);
-   const body=JSON.parse(raw),messages=Array.isArray(body.messages)?body.messages:[];
-   const safe=messages.slice(-12).filter(m=>m&&(m.role==="user"||m.role==="assistant")&&typeof m.content==="string"&&m.content.length<=1200);
-   if(!safe.length||safe[safe.length-1].role!=="user")return json({error:"질문을 입력해 주세요."},400,allowed);
-   const context=JSON.stringify(body.context||{}).slice(0,14000);
-   const upstream=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"Authorization":`Bearer ${env.OPENAI_API_KEY}`,"Content-Type":"application/json"},body:JSON.stringify({model:env.OPENAI_MODEL,instructions:SYSTEM_PROMPT+"\\n\\n[이번 상담의 계산된 사주 문맥]\\n"+context,input:safe.map(m=>({role:m.role,content:[{type:"input_text",text:m.content}]})),max_output_tokens:1200,store:false})});
-   const result=await upstream.json().catch(()=>({}));
-   if(!upstream.ok)return json({error:"OpenAI API 응답 오류("+upstream.status+"). API 키·결제 설정·모델 접근 권한을 확인해 주세요."},502,allowed);
-   const reply=typeof result.output_text==="string"?result.output_text:(result.output||[]).filter(x=>x.type==="message").flatMap(x=>x.content||[]).filter(x=>x.type==="output_text").map(x=>x.text||"").join("\\n");
-   if(typeof reply!=="string"||!reply.trim())return json({error:"AI 응답 형식을 확인할 수 없습니다."},502,allowed);
-   return json({reply:reply.trim()},200,allowed);
-  } catch(e) { return json({error:"상담 요청을 처리하지 못했습니다. 잠시 뒤 다시 시도해 주세요."},500,allowed); }
+   const raw = await request.text();
+   if (raw.length > 30000) return json({ error: "요청 내용이 너무 깁니다." }, 413, allowed);
+   const body = JSON.parse(raw);
+   const messages = Array.isArray(body.messages) ? body.messages : [];
+   const safe = messages.slice(-12).filter(m =>
+    m && (m.role === "user" || m.role === "assistant") &&
+    typeof m.content === "string" && m.content.length <= 1200
+   );
+   if (!safe.length || safe[safe.length - 1].role !== "user") {
+    return json({ error: "질문을 입력해 주세요." }, 400, allowed);
+   }
+   const context = JSON.stringify(body.context || {}).slice(0, 14000);
+   const model = env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+   const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/" +
+    encodeURIComponent(model) + ":generateContent";
+   const contents = safe.map(m => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }]
+   }));
+   const upstream = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+     "Content-Type": "application/json",
+     "x-goog-api-key": env.GEMINI_API_KEY
+    },
+    body: JSON.stringify({
+     systemInstruction: {
+      parts: [{ text: SYSTEM_PROMPT + "\n\n[이번 상담의 계산된 사주 문맥]\n" + context }]
+     },
+     contents,
+     generationConfig: { maxOutputTokens: 1200, temperature: 0.7 }
+    })
+   });
+   const result = await upstream.json().catch(() => ({}));
+   if (!upstream.ok) {
+    const status = upstream.status;
+    const message = status === 429
+     ? "Gemini 무료 사용 한도에 도달했느니라. 잠시 뒤 다시 시도해 보아라."
+     : status === 400 || status === 403
+      ? "Gemini API 키 또는 모델 설정을 확인해 주어라."
+      : "Gemini API 응답 오류(" + status + ")가 발생했느니라.";
+    return json({ error: message }, 502, allowed);
+   }
+   const reply = (result.candidates?.[0]?.content?.parts || [])
+    .map(part => typeof part.text === "string" ? part.text : "")
+    .join("\n").trim();
+   if (!reply) return json({ error: "AI 응답을 확인할 수 없습니다. 잠시 뒤 다시 물어보아라." }, 502, allowed);
+   return json({ reply }, 200, allowed);
+  } catch (e) {
+   return json({ error: "상담 요청을 처리하지 못했습니다. 잠시 뒤 다시 시도해 주세요." }, 500, allowed);
+  }
  }
 };
