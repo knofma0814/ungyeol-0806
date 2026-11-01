@@ -287,7 +287,14 @@ async function calcYear(){
   const r=calc({year,month:7,day:1,hour:12,minute:0,isLunar:false,isLeapMonth:false,gender:"male",dayBoundary:"midnight"});
   const obj=r.toObject(),p=parts(obj.year),day=parts(natalObj.day),god=tenGod(day.stem,p.stem);
   const interactions=branchEntries(natalObj,"본인").flatMap(x=>relation(x.branch,p.branch).map(kind=>x.position+" "+x.branch+"와 세운 지지 "+p.branch+"의 "+kind));
-  show("yearReport",`<h3>${year}년 세운 ${escapeHTML(obj.year)}</h3><p><b>세운 천간:</b> ${p.stem}(${STEM_ELEMENT[p.stem]}) · 일간 기준 십성 <b>${god}</b></p><p><b>세운 지지:</b> ${p.branch} · 원국 지지와의 관계</p><ul>${interactions.length?interactions.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>현재 원국 지지와 직접 확인되는 합·충·형·파·해 관계가 없습니다.</li>"}</ul><p><b>세운 천간의 오행 관계:</b> ${elementRelation(STEM_ELEMENT[day.stem],STEM_ELEMENT[p.stem])}</p><p class="muted">선택 연도의 7월 1일을 기준으로 만세력 엔진에서 연주를 가져옵니다. 연주는 입춘을 경계로 바뀌므로 1~2월 초 출생이나 특정 날짜의 실제 세운 적용은 별도 확인이 필요합니다. 세운의 길흉은 원국·대운·용신을 함께 보아야 하며, 합충 한두 개만으로 사건을 예측하지 않습니다.</p>`);
+  const stemRelations=["year","month","day","hour"].filter(k=>!(k==="hour"&&natalObj.__unknownTime)).flatMap(k=>{
+   const x=parts(natalObj[k]),pos={year:"년간",month:"월간",day:"일간",hour:"시간"}[k],out=[];
+   if(pairHas(STEM_COMB,x.stem,p.stem))out.push(pos+" "+x.stem+"과 세운 천간 "+p.stem+"의 천간합");
+   if(pairHas(STEM_CLASH,x.stem,p.stem))out.push(pos+" "+x.stem+"과 세운 천간 "+p.stem+"의 천간충");
+   return out;
+  });
+  const stage=twelveStage(day.stem,p.branch);
+  show("yearReport",`<h3>${year}년 세운 ${escapeHTML(obj.year)}</h3><p><b>세운 천간:</b> ${p.stem}(${STEM_ELEMENT[p.stem]}) · 일간 기준 십성 <b>${god}</b></p><p><b>세운 지지:</b> ${p.branch} · 일간 기준 십이운성 <b>${stage}</b></p><p><b>세운 천간과 원국의 합·충</b></p><ul>${stemRelations.length?stemRelations.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>원국 천간과 직접 확인되는 천간합·천간충이 없습니다.</li>"}</ul><p><b>세운 지지와 원국의 합·충·형·파·해·원진</b></p><ul>${interactions.length?interactions.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>현재 원국 지지와 직접 확인되는 관계가 없습니다.</li>"}</ul><p><b>세운 천간의 오행 관계:</b> ${elementRelation(STEM_ELEMENT[day.stem],STEM_ELEMENT[p.stem])}</p><p class="muted">선택 연도의 7월 1일을 기준으로 만세력 엔진에서 연주를 가져옵니다. 연주는 입춘을 경계로 바뀌므로 1~2월 초의 실제 날짜 적용은 별도 확인이 필요합니다. 세운 지지는 일간 기준 십이운성으로 표시하며, 길흉은 원국·대운·용신을 함께 보아야 합니다. 합충 한두 개만으로 사건을 예측하지 않습니다.</p>`);
  }catch(e){show("yearReport",`<span class="error">${escapeHTML(e.message||e)}</span>`);}
 }
 function fullReport(){
