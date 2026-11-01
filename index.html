@@ -226,9 +226,20 @@ function analyzePattern(obj){
  else if(monthStage==="제왕"&&STEM_POLARITY[st.day]===0)base="제왕지 해당(양인격 단정 보류) · "+base;
  const status=main?.exposed?"월지 본기와 같은 지장간이 천간에 투출":"월지 본기의 투출이 확인되지 않음";
  const monthInteractions=branchEntries(obj,"본인").filter(x=>x.position!=="월지").flatMap(x=>relation(st.month.branch,x.branch).map(kind=>x.position+" "+x.branch+"와 월지 "+st.month.branch+"의 "+kind));
+ const monthDamage=monthInteractions.filter(x=>/충|형|파|해|원진/.test(x));
+ const exposedPriority=candidates.filter(x=>x.exposed).sort((a,b)=>b.weight-a.weight);
+ const exposedMain=!!main?.exposed,exposedSecondary=exposedPriority.some(x=>x.role!=="본기");
+ const monthGod=main?.god||"";
+ const patternType=monthStage==="건록"?"건록격":monthStage==="제왕"&&STEM_POLARITY[st.day]===1?"양인격":(["정관","편관(칠살)","정재","편재","식신","상관","정인","편인"].includes(monthGod)?monthGod+"격 후보":"월령 중심 격국 검토");
+ const establishment=monthStage==="건록"||(monthStage==="제왕"&&STEM_POLARITY[st.day]===1)||exposedMain?"성립 근거가 비교적 뚜렷한 후보":exposedSecondary?"월령 지장간 투출을 통한 격국 후보":"월령 본기 투출이 없어 격국 성립을 신중히 검토";
+ const breakFactors=[];
+ if(monthDamage.length)breakFactors.push("월지에 대한 형충파해·원진 관계: "+monthDamage.join(" / "));
+ if(!exposedMain&&exposedSecondary)breakFactors.push("본기가 아닌 중기·여기 투출이 중심이므로 격국 우선순위 재검토");
+ if(!exposedMain&&!exposedSecondary)breakFactors.push("월지 본기 및 다른 지장간의 천간 투출 근거가 약함");
+ const statusDetail=breakFactors.length?"성립을 약화하거나 재검토하게 하는 요인 존재":"현재 단순 점검에서 뚜렷한 파격 단서는 제한적";
  return {monthBranch:st.month.branch,candidates,main,candidate:base,monthStage,status,mainExposed:!!main?.exposed,monthInteractions,
-  exposedHidden:candidates.filter(x=>x.exposed),
-  note:"월지 본기와 지장간의 실제 투출을 중심으로 격국 후보를 표시했습니다. 월지가 일간의 건록지 또는 양인지에 해당하는지도 별도로 확인하되, 양인격의 적용은 일간 음양과 학파 기준을 구분했습니다. 월령의 왕쇠, 회국·합화, 형충에 따른 격국 변화와 성패는 추가 검토가 필요합니다."};
+  exposedHidden:candidates.filter(x=>x.exposed),exposedPriority,patternType,establishment,breakFactors,statusDetail,
+  note:"격국 후보는 월령 본기·중기·여기의 십성과 투출을 구분해 제시합니다. 파격 단서는 월지의 형충파해 및 투출 우선순위로 표시하지만, 실제 성격은 구응·제화·회국·합화·격국별 성패 기준과 학파 차이를 함께 검토해야 하므로 자동 확정하지 않습니다."};
 }
 function analyzeUseful(obj){
  const base=analyzeStrength(obj);if(base.error)return base;
@@ -243,9 +254,13 @@ function analyzeUseful(obj){
  const bridge=[];
  for(const [pair,mediator] of Object.entries(bridgeMap)){const [a,b]=pair.split("|");if(base.weighted[a]>=.5&&base.weighted[b]>=.5)bridge.push({conflict:a+"극"+b,element:mediator,present:base.weighted[mediator]>=.5,mediatorAmount:base.weighted[mediator],conflictWeight:Math.min(base.weighted[a],base.weighted[b])});}
  const combinedCandidates=[...new Set([...climateCandidates.map(x=>x.element),...suppression])];
- return {...base,climate,pattern,supportSide,suppression,avoid,climateCandidates,bridge,combinedCandidates,
+ const climateSet=climateCandidates.map(x=>x.element),suppressionSet=suppression,bridgeSet=bridge.filter(x=>x.present).map(x=>x.element);
+ const agreement=climateSet.filter(x=>suppressionSet.includes(x));
+ const conflict=climateSet.length&&suppressionSet.length&&!agreement.length;
+ const priority=agreement.length?{primary:agreement,reason:"조후와 억부 후보가 겹치는 오행을 우선 검토"}:climateSet.length&&conflict?{primary:climateSet,secondary:suppressionSet,reason:"조후와 억부가 충돌하므로 계절의 급한 병폐와 격국 성패를 먼저 대조; 단일 우선순위 확정 불가"}:climateSet.length?{primary:climateSet,secondary:suppressionSet,reason:"한난조습의 조절 필요성을 먼저 확인하되 억부와 격국을 병행"}:suppressionSet.length?{primary:suppressionSet,secondary:bridgeSet,reason:"강약 조절 후보를 먼저 검토하고 통관은 실제 극전 관계가 성립할 때 보조"}:{primary:bridgeSet,reason:"조후·억부의 뚜렷한 후보가 없어 통관 구조를 보조적으로 검토"};
+ return {...base,climate,pattern,supportSide,suppression,avoid,climateCandidates,bridge,combinedCandidates,priority,climateSuppressionConflict:!!conflict,agreement,
   missing:Object.entries(base.c).filter(([,v])=>v===0).map(([e])=>e),
-  decisionNote:"조후·억부·통관은 서로 다른 관점의 참고 후보입니다. 이 단계에서는 최종 용신을 확정하지 않았으므로 희신·기신도 판정하지 않습니다. 실제 용신은 격국의 성패, 월령의 왕쇠, 통근·투출, 합충형파 및 대운을 함께 검토해야 합니다."};
+  decisionNote:"우선순위는 자동 확정 용신이 아니라 검토 순서입니다. 조후와 억부가 일치하면 공통 후보를 우선 대조하고, 충돌하면 계절의 급한 병폐·격국 성패·통근·운에서의 보완 여부를 함께 보아야 합니다. 통관은 상극하는 두 기운이 실제로 함께 강할 때만 후보로 올리며, 희신·기신은 최종 용신 확정 전 판정하지 않습니다."};
 }
 function escapeHTML(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function show(id,html){$(id).innerHTML=html;}
