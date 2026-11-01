@@ -164,7 +164,27 @@ function analyzeStructure(obj){
  const monthGod=monthMain?tenGod(day,monthMain):"미상",monthStemGod=month.stem?tenGod(day,month.stem):"미상";
  const godCounts={};for(const x of visible){if(x.name!=="일주")godCounts[x.stemGod]=(godCounts[x.stemGod]||0)+1;}for(const x of hidden)godCounts[x.god]=(godCounts[x.god]||0)+x.weight;
  const season=SEASON[month.branch]?.[2]||"미상";
- return {day,visible,hidden,rootHits,resourceHits,month,monthMain,monthGod,monthStemGod,godCounts,season};
+ // 원국 내부 천간·지지 관계를 모든 서로 다른 자리끼리 계산
+ const stemPairs=[],branchPairs=[];
+ for(let i=0;i<positions.length;i++)for(let j=i+1;j<positions.length;j++){
+  const [nameA,keyA]=positions[i],[nameB,keyB]=positions[j],a=parts(obj[keyA]),b=parts(obj[keyB]);
+  if(a.stem&&b.stem){
+   if(pairHas(STEM_COMB,a.stem,b.stem))stemPairs.push({a:nameA,b:nameB,kind:"천간합",pair:a.stem+"-"+b.stem});
+   if(pairHas(STEM_CLASH,a.stem,b.stem))stemPairs.push({a:nameA,b:nameB,kind:"천간충",pair:a.stem+"-"+b.stem});
+  }
+  if(a.branch&&b.branch)for(const kind of relation(a.branch,b.branch))branchPairs.push({a:nameA,b:nameB,kind,pair:a.branch+"-"+b.branch});
+ }
+ const natalEntries=branchEntries(obj,"본인");
+ const completeNatal=(groups,name)=>groups.flatMap(g=>{
+  const found=g.map(ch=>natalEntries.filter(x=>x.branch===ch));
+  if(!found.every(x=>x.length))return [];
+  return [{name,group:g.join(""),detail:found.map((xs,i)=>g[i]+": "+xs.map(x=>x.position).join("/")).join(" · ")}];
+ });
+ const natalTriads=completeNatal(TRIADS,"삼합"),natalDirections=completeNatal(DIRECTIONS,"방합");
+ const natalHalf=branchPairs.filter(x=>x.kind==="반합");
+ return {day,visible,hidden,rootHits,resourceHits,month,monthMain,monthGod,monthStemGod,godCounts,season,
+  stemPairs,branchPairs,natalTriads,natalDirections,natalHalf,
+  relationNote:"원국의 합·충·형·파·해는 서로 다른 두 기둥의 관계를 전수 비교했습니다. 삼합·방합은 세 글자가 모두 원국에 있을 때만 완성으로 표시하며, 합화 여부는 별도 조건을 검토해야 합니다."};
 }
 function distribution(obj){const c={목:0,화:0,토:0,금:0,수:0};for(const k of ["year","month","day","hour"]){if(k==="hour"&&obj.__unknownTime)continue;const p=parts(obj[k]);if(!p.stem||!p.branch)continue;if(STEM_ELEMENT[p.stem])c[STEM_ELEMENT[p.stem]]++;for(const [s,w] of HIDDEN[p.branch]||[])c[STEM_ELEMENT[s]]+=w;}return c;}
 function analyzeStrength(obj){
@@ -244,7 +264,7 @@ async function loadEngine(){if(engine)return engine;const mod=await import("http
 function renderChart(obj,unknown){const rows=[["년주",obj.year],["월주",obj.month],["일주",obj.day],["시주",unknown?"출생 시간 미상":obj.hour||"미상"]];show("chartReport",`<div class="cards">${rows.map(([n,v])=>`<div class="mini"><b>${n}</b><strong>${escapeHTML(v||"미상")}</strong></div>`).join("")}</div>`);}
 function renderBasic(obj){
  const s=analyzeStrength(obj),c=analyzeClimate(obj),u=analyzeUseful(obj),st=analyzeStructure(obj),g=analyzePattern(obj),esc=escapeHTML;
- show("structureReport",st.error?st.error:`<p class="lead">월지 <b>${st.month.branch}</b>의 본기 <b>${st.monthMain}(${st.monthGod})</b>, 십이운성 <b>${g.monthStage}</b>를 격국 판단의 출발점으로 삼습니다.</p><h3>격국 후보와 성립 단서</h3><p><b>우선 후보:</b> ${esc(g.candidate)}</p><p><b>월지 지장간 십성:</b> ${g.candidates.map(x=>x.stem+"("+x.role+") · "+x.god+" · 가중치 "+x.weight.toFixed(2)+(x.exposed?" · 투출":" · 미투출")).join(" / ")}</p><p><b>월지 본기 투출:</b> ${g.mainExposed?g.main.exposedAt.join(" · ")+"에서 월지 본기 "+g.main.stem+"이 천간에 투출함":"월지 본기와 같은 지장간 글자가 천간에서 확인되지 않음"}</p><p><b>월지와 다른 원국 지지의 관계:</b> ${g.monthInteractions.join(" · ")||"직접 확인되는 합·충·형·파·해 관계 없음"}</p><p><b>월간 십성:</b> ${st.monthStemGod}</p><p><b>일간 통근:</b> ${st.rootHits.map(x=>x.position+" "+x.branch+"의 "+x.stem).join(" · ")||"확인되지 않음"} · <b>인성 뿌리:</b> ${st.resourceHits.map(x=>x.position+" "+x.branch+"의 "+x.stem).join(" · ")||"확인되지 않음"}</p><p class="muted">격국 후보는 월지 본기와 투출을 중심으로 표시했습니다. 월령의 왕쇠, 회국·합화, 형충으로 인한 변화와 격국의 성패까지 모두 판정한 것은 아니므로 확정 격국이 아닙니다.</p><h3>천간 십성</h3><table><thead><tr><th>위치</th><th>천간</th><th>십성</th></tr></thead><tbody>${st.visible.map(x=>`<tr><td>${x.name}</td><td>${esc(x.stem||"—")}</td><td>${x.stemGod}</td></tr>`).join("")}</tbody></table><h3>지장간과 십성</h3><table><thead><tr><th>위치·지지</th><th>지장간</th><th>십성</th><th>역할</th></tr></thead><tbody>${st.hidden.map(x=>`<tr><td>${x.position} ${x.branch}</td><td>${x.stem}</td><td>${x.god}</td><td>${x.main?"본기":"중기·여기"}</td></tr>`).join("")}</tbody></table><h3>십성 분포 참고</h3><p>${Object.entries(st.godCounts).filter(([,v])=>v>0).map(([k,v])=>k+" "+v.toFixed(2)).join(" · ")}</p>`);
+ show("structureReport",st.error?st.error:`<p class="lead">월지 <b>${st.month.branch}</b>의 본기 <b>${st.monthMain}(${st.monthGod})</b>, 십이운성 <b>${g.monthStage}</b>를 격국 판단의 출발점으로 삼습니다.</p><h3>격국 후보와 성립 단서</h3><p><b>우선 후보:</b> ${esc(g.candidate)}</p><p><b>월지 지장간 십성:</b> ${g.candidates.map(x=>x.stem+"("+x.role+") · "+x.god+" · 가중치 "+x.weight.toFixed(2)+(x.exposed?" · 투출":" · 미투출")).join(" / ")}</p><p><b>월지 본기 투출:</b> ${g.mainExposed?g.main.exposedAt.join(" · ")+"에서 월지 본기 "+g.main.stem+"이 천간에 투출함":"월지 본기와 같은 지장간 글자가 천간에서 확인되지 않음"}</p><p><b>월지와 다른 원국 지지의 관계:</b> ${g.monthInteractions.join(" · ")||"직접 확인되는 합·충·형·파·해 관계 없음"}</p><h3>원국 내부 천간 관계</h3><p>${st.stemPairs.map(x=>x.a+"-"+x.b+" "+x.kind+"("+x.pair+")").join(" · ")||"천간합·천간충 없음"}</p><h3>원국 내부 지지 관계</h3><p>${st.branchPairs.map(x=>x.a+"-"+x.b+" "+x.kind+"("+x.pair+")").join(" · ")||"두 기둥 사이의 지지 관계 없음"}</p><p><b>완성된 삼합:</b> ${st.natalTriads.map(x=>x.group+" ("+x.detail+")").join(" · ")||"없음"} · <b>완성된 방합:</b> ${st.natalDirections.map(x=>x.group+" ("+x.detail+")").join(" · ")||"없음"}</p><p><b>반합:</b> ${st.natalHalf.map(x=>x.a+"-"+x.b+" ("+x.pair+")").join(" · ")||"없음"}</p><p class="muted">${st.relationNote} 합이 있다고 자동으로 합화되는 것은 아니며, 계절·투출·통근·방해 관계를 별도로 검토합니다.</p><p><b>월간 십성:</b> ${st.monthStemGod}</p><p><b>일간 통근:</b> ${st.rootHits.map(x=>x.position+" "+x.branch+"의 "+x.stem).join(" · ")||"확인되지 않음"} · <b>인성 뿌리:</b> ${st.resourceHits.map(x=>x.position+" "+x.branch+"의 "+x.stem).join(" · ")||"확인되지 않음"}</p><p class="muted">격국 후보는 월지 본기와 투출을 중심으로 표시했습니다. 월령의 왕쇠, 회국·합화, 형충으로 인한 변화와 격국의 성패까지 모두 판정한 것은 아니므로 확정 격국이 아닙니다.</p><h3>천간 십성</h3><table><thead><tr><th>위치</th><th>천간</th><th>십성</th></tr></thead><tbody>${st.visible.map(x=>`<tr><td>${x.name}</td><td>${esc(x.stem||"—")}</td><td>${x.stemGod}</td></tr>`).join("")}</tbody></table><h3>지장간과 십성</h3><table><thead><tr><th>위치·지지</th><th>지장간</th><th>십성</th><th>역할</th></tr></thead><tbody>${st.hidden.map(x=>`<tr><td>${x.position} ${x.branch}</td><td>${x.stem}</td><td>${x.god}</td><td>${x.main?"본기":"중기·여기"}</td></tr>`).join("")}</tbody></table><h3>십성 분포 참고</h3><p>${Object.entries(st.godCounts).filter(([,v])=>v>0).map(([k,v])=>k+" "+v.toFixed(2)).join(" · ")}</p>`);
  const voids=Array.isArray(natalResult?.voidBranches)?natalResult.voidBranches:[];
  show("voidReport",voids.length?`<p><b>일주 기준 공망 지지:</b> ${voids.map(escapeHTML).join(" · ")}</p><p>공망은 일주를 기준으로 순(旬)에 포함되지 않는 두 지지를 가리키는 전통 명리 개념입니다. 해당 지지가 원국이나 운에서 만난다고 무조건 흉하다고 보지 않으며, 어떤 십성과 자리에서 작용하는지 함께 살펴야 합니다.</p>`:"만세력 엔진에서 공망 자료를 제공하지 않았습니다.");
  show("strengthReport",s.error?s.error:`<p>일간: <b>${s.stem} (${s.day})</b> · 강약 참고: <b>${s.label}</b></p><p>월령 오행: <b>${s.seasonElement}</b> · 계절 보정 생조 세력 ${s.support.toFixed(2)} / 기타 세력 ${s.other.toFixed(2)} · 참고 비율 ${(s.ratio*100).toFixed(1)}%</p><p>원분포: ${Object.entries(s.c).map(([k,v])=>k+" "+v.toFixed(2)).join(" · ")}</p><p>월령 보정계수: ${Object.entries(s.seasonalFactors).map(([k,v])=>k+" "+v.toFixed(1)).join(" · ")}</p><p class="muted">오행의 단순 개수 대신 월령의 왕상휴수사 관계를 참고해 계절 가중치를 적용한 보조 지표입니다. 지장간의 실제 세력, 통근의 깊이, 투출과 합화, 격국의 성패를 모두 계산한 정통 신강신약 판정은 아니며 계수와 경계값은 참고용입니다.</p>`);
