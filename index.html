@@ -260,7 +260,7 @@ const TRIADS=[["신","자","진"],["해","묘","미"],["인","오","술"],["사"
 const DIRECTIONS=[["인","묘","진"],["사","오","미"],["신","유","술"],["해","자","축"]];
 const AMHAP_PRIMARY=[["자","술"],["축","인"],["묘","신"],["인","미"],["오","해"]];
 const AMHAP_ALTERNATE=[["술","해"],["축","인"],["진","사"],["미","신"]];
-function pairHas(arr,a,b){return arr.some(x=>x.includes(a)&&x.includes(b));}
+function pairHas(arr,a,b){if(!a||!b||a===b)return false;return arr.some(x=>x.includes(a)&&x.includes(b));}
 function relation(a,b){const out=[];for(const [name,pairs] of Object.entries(PAIRS))if(pairHas(pairs,a,b))out.push(name);if(TRIADS.some(g=>g.includes(a)&&g.includes(b)&&a!==b))out.push("반합");if(a===b&&["진","오","유","해"].includes(a))out.push("자형");return out;}
 function branchEntries(obj,side){return ["year","month","day","hour"].filter(k=>!(k==="hour"&&obj.__unknownTime)).map(k=>({branch:parts(obj[k]).branch,position:k==="year"?"년지":k==="month"?"월지":k==="day"?"일지":"시지",side})).filter(x=>x.branch);}
 function completeGroupRelations(entries,groups,name){const out=[];for(const g of groups){const found=g.map(ch=>entries.filter(x=>x.branch===ch));if(found.every(x=>x.length)&&found.some(x=>x.some(y=>y.side==="본인"))&&found.some(x=>x.some(y=>y.side==="상대방"))){const detail=found.map((xs,i)=>xs.map(x=>x.side+" "+x.position).join("/")).join(" · ");out.push(`${name}(${g.join("")}): ${detail}`);}}return out;}
