@@ -1,7 +1,7 @@
 // 운결 서비스 워커
 // - 앱 파일을 캐시하고, 설치 시 만세력 엔진(esm.sh)과 그 하위 모듈까지 자동으로 내려받아 저장합니다.
 // - 앱을 수정해 다시 올릴 때는 VER 숫자를 올리면 이전 캐시가 정리됩니다.
-const VER = "ungyeol-v20";;
+const VER = "ungyeol-v21";;
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png", "./apple-touch-icon.png"];
 const ENGINE = "https://esm.sh/manseryeok@2.0.0";
 const MATCH = { ignoreVary: true };
