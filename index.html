@@ -41,7 +41,7 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <body>
 <header><div class="brand">運結</div><p>운결 · 사주와 인연의 흐름을 읽다</p></header>
 <main>
-<nav class="tabbar" aria-label="분석 메뉴"><button type="button" id="personalTab" class="active">나의 사주</button><button type="button" id="compatTab">궁합 분석</button></nav>
+<nav class="tabbar" aria-label="분석 메뉴"><button type="button" id="personalTab" class="active">나의 사주</button><button type="button" id="compatTab">궁합 분석</button><button type="button" id="aiTab">AI 상담</button></nav>
 <div id="personalPane" class="pane active">
 <section class="panel">
 <h2>나의 출생 정보</h2>
@@ -72,16 +72,7 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <section class="panel"><h2>세운 조회</h2><div class="row"><div class="field"><label for="fortuneYear">분석 연도</label><select id="fortuneYear"></select></div><button class="secondary" id="fortuneButton">세운 계산</button></div><div id="yearReport" class="report"></div></section>
 
 
-<section class="panel ai-chat" id="aiCounselPanel">
- <div class="ai-chat-head"><div class="ai-orb">☾</div><div><strong>운결의 운명술사</strong><small>그대의 사주에 담긴 흐름을 함께 살펴보겠습니다.</small></div></div>
- <p class="sub">먼저 ‘나의 사주’를 계산하면 원국·강약·격국·용신·대운을 바탕으로 자유롭게 질문할 수 있습니다.</p>
- <div class="ai-config"><label for="aiEndpoint">AI 상담 서버 주소 (새로고침하면 다시 입력)</label><input id="aiEndpoint" type="url" placeholder="https://your-worker.example.workers.dev/chat" autocomplete="url"><p class="sub">상담 서버를 별도로 연결해야 실제 AI 답변이 가능합니다. API 키는 이곳에 입력하지 마세요.</p></div>
- <div class="ai-suggestions"><button type="button" class="secondary" data-ai-question="내 사주의 가장 큰 특징과 타고난 기질을 풀어다오.">타고난 기질</button><button type="button" class="secondary" data-ai-question="올해 나의 직업운과 일의 흐름을 살펴다오.">올해 직업운</button><button type="button" class="secondary" data-ai-question="나의 재물운에서 기회와 주의할 점을 알려다오.">재물운</button><button type="button" class="secondary" data-ai-question="내 대운의 흐름과 앞으로 살펴볼 시기를 설명해다오.">대운의 흐름</button></div>
- <div id="aiMessages" class="ai-messages" aria-live="polite"><div class="ai-message assistant">어서 오너라, 그대. 사주를 먼저 펼쳐 놓으면 그 안에 담긴 기운의 흐름을 함께 읽어 보마. 무엇이 궁금한지 편히 물어보아라.</div></div>
- <div class="ai-compose"><textarea id="aiQuestion" rows="2" maxlength="1200" placeholder="그대의 운세에 관해 무엇이 궁금한가?"></textarea><button type="button" id="aiSendButton">물어보기</button></div>
- <div id="aiStatus" class="ai-status" role="status"></div>
- <p class="ai-note">상담은 전통 명리학을 바탕으로 한 참고 해석입니다. 운명을 단정하거나 의료·법률·재정 전문가의 판단을 대신하지 않습니다. 출생 원국 정보는 질문에 답하기 위한 문맥으로만 전송되며 이 앱 자체에는 저장하지 않습니다.</p>
-</section>
+
 
 <section class="panel"><h2>개인 사주 리포트</h2><p class="sub">나의 원국과 강약·조후·용신 후보·대운을 종합해 풀이합니다.</p><button id="fullReportButton" class="secondary">개인 리포트 만들기</button><button id="printButton" class="secondary">인쇄 / PDF 저장</button><div id="fullReport" class="report"></div></section>
 </div>
@@ -108,6 +99,18 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 </div>
 
 
+<div id="aiPane" class="pane">
+<section class="panel ai-chat" id="aiCounselPanel">
+ <div class="ai-chat-head"><div class="ai-orb">☾</div><div><strong>운결의 운명술사</strong><small>그대의 사주에 담긴 흐름을 함께 살펴보겠습니다.</small></div></div>
+ <p class="sub">먼저 ‘나의 사주’를 계산하면 원국·강약·격국·용신·대운을 바탕으로 자유롭게 질문할 수 있습니다.</p>
+ <div class="ai-config"><label for="aiEndpoint">AI 상담 서버 주소 (새로고침하면 다시 입력)</label><input id="aiEndpoint" type="url" placeholder="https://your-worker.example.workers.dev" value="https://ungyeol-ai.knofma0814.workers.dev" autocomplete="url"><p class="sub">상담 서버를 별도로 연결해야 실제 AI 답변이 가능합니다. API 키는 이곳에 입력하지 마세요.</p></div>
+ <div class="ai-suggestions"><button type="button" class="secondary" data-ai-question="내 사주의 가장 큰 특징과 타고난 기질을 풀어다오.">타고난 기질</button><button type="button" class="secondary" data-ai-question="올해 나의 직업운과 일의 흐름을 살펴다오.">올해 직업운</button><button type="button" class="secondary" data-ai-question="나의 재물운에서 기회와 주의할 점을 알려다오.">재물운</button><button type="button" class="secondary" data-ai-question="내 대운의 흐름과 앞으로 살펴볼 시기를 설명해다오.">대운의 흐름</button></div>
+ <div id="aiMessages" class="ai-messages" aria-live="polite"><div class="ai-message assistant">어서 오너라, 그대. 사주를 먼저 펼쳐 놓으면 그 안에 담긴 기운의 흐름을 함께 읽어 보마. 무엇이 궁금한지 편히 물어보아라.</div></div>
+ <div class="ai-compose"><textarea id="aiQuestion" rows="2" maxlength="1200" placeholder="그대의 운세에 관해 무엇이 궁금한가?"></textarea><button type="button" id="aiSendButton">물어보기</button></div>
+ <div id="aiStatus" class="ai-status" role="status"></div>
+ <p class="ai-note">상담은 전통 명리학을 바탕으로 한 참고 해석입니다. 운명을 단정하거나 의료·법률·재정 전문가의 판단을 대신하지 않습니다. 출생 원국 정보는 질문에 답하기 위한 문맥으로만 전송되며 이 앱 자체에는 저장하지 않습니다.</p>
+</section>
+</div>
 <footer class="sub" style="text-align:center;padding:20px">運結 · 전통 명리학 기반 참고 정보<br>미래를 확정하거나 중요한 결정을 대신하지 않습니다.</footer>
 </main>
 <script type="module">
@@ -540,7 +543,7 @@ async function sendAIQuestion(prefill){
  finally{btn.disabled=false;input.focus();}
 }
 
-function init(){const y=$("fortuneYear");$("personalTab").addEventListener("click",()=>{ $("personalTab").classList.add("active");$("compatTab").classList.remove("active");$("personalPane").classList.add("active");$("compatPane").classList.remove("active"); });$("compatTab").addEventListener("click",()=>{ $("compatTab").classList.add("active");$("personalTab").classList.remove("active");$("compatPane").classList.add("active");$("personalPane").classList.remove("active"); });$("compatReportButton").addEventListener("click",compatFullReport);const now=new Date().getFullYear();for(let n=now-5;n<=now+10;n++){const o=document.createElement("option");o.value=n;o.textContent=n+"년";if(n===now)o.selected=true;y.append(o);}for(const [id,fields] of [["timeMode",["hourField","minuteField"]],["partnerTimeMode",["partnerHourField","partnerMinuteField"]]]){const sync=()=>fields.forEach(field=>$(field).classList.toggle("hidden",$(id).value==="unknown"));$(id).addEventListener("change",sync);sync();}for(const [id,field] of [["calendarType","leapField"],["partnerCalendar","partnerLeapField"]]){$(id).addEventListener("change",()=>$(field).classList.toggle("hidden",$(id).value!=="lunar"));$(field).classList.toggle("hidden",$(id).value!=="lunar");}$("calculateButton").addEventListener("click",calculateMain);$("compatibilityButton").addEventListener("click",calcPartner);$("fortuneButton").addEventListener("click",calcYear);$("fullReportButton").addEventListener("click",fullReport);$("printButton").addEventListener("click",()=>window.print());$("aiSendButton").addEventListener("click",()=>sendAIQuestion());$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAIQuestion();}});document.querySelectorAll("[data-ai-question]").forEach(b=>b.addEventListener("click",()=>sendAIQuestion(b.dataset.aiQuestion)));}
+function init(){const y=$("fortuneYear");const switchPane=name=>{for(const [tab,pane] of [["personalTab","personalPane"],["compatTab","compatPane"],["aiTab","aiPane"]]){$(tab).classList.toggle("active",tab===name+"Tab");$(pane).classList.toggle("active",pane===name+"Pane");}};$("personalTab").addEventListener("click",()=>switchPane("personal"));$("compatTab").addEventListener("click",()=>switchPane("compat"));$("aiTab").addEventListener("click",()=>switchPane("ai"));$("compatReportButton").addEventListener("click",compatFullReport);const now=new Date().getFullYear();for(let n=now-5;n<=now+10;n++){const o=document.createElement("option");o.value=n;o.textContent=n+"년";if(n===now)o.selected=true;y.append(o);}for(const [id,fields] of [["timeMode",["hourField","minuteField"]],["partnerTimeMode",["partnerHourField","partnerMinuteField"]]]){const sync=()=>fields.forEach(field=>$(field).classList.toggle("hidden",$(id).value==="unknown"));$(id).addEventListener("change",sync);sync();}for(const [id,field] of [["calendarType","leapField"],["partnerCalendar","partnerLeapField"]]){$(id).addEventListener("change",()=>$(field).classList.toggle("hidden",$(id).value!=="lunar"));$(field).classList.toggle("hidden",$(id).value!=="lunar");}$("calculateButton").addEventListener("click",calculateMain);$("compatibilityButton").addEventListener("click",calcPartner);$("fortuneButton").addEventListener("click",calcYear);$("fullReportButton").addEventListener("click",fullReport);$("printButton").addEventListener("click",()=>window.print());$("aiSendButton").addEventListener("click",()=>sendAIQuestion());$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAIQuestion();}});document.querySelectorAll("[data-ai-question]").forEach(b=>b.addEventListener("click",()=>sendAIQuestion(b.dataset.aiQuestion)));}
 init();
 </script>
 <script>
