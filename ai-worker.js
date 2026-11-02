@@ -36,9 +36,13 @@ const SYSTEM_PROMPT = `너는 한국 전통 명리학 상담 서비스 '운결(�
 export default {
  async fetch(request, env) {
   const origin = request.headers.get("Origin") || "";
-  const allowed = env.ALLOWED_ORIGIN || "";
-  if (!allowed || origin !== allowed) return new Response("Origin not allowed", { status: 403 });
-  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(allowed) });
+  let allowed = String(env.ALLOWED_ORIGIN || "https://knofma0814.github.io");
+  if (allowed.endsWith("/")) allowed = allowed.slice(0, -1);
+  if (request.method === "OPTIONS") {
+   if (origin !== allowed) return new Response("Origin not allowed", { status: 403 });
+   return new Response(null, { status: 204, headers: corsHeaders(allowed) });
+  }
+  if (origin !== allowed) return json({ error: "운결 웹사이트 주소가 허용 목록과 일치하지 않습니다. Cloudflare의 ALLOWED_ORIGIN 값을 확인해 주세요." }, 403, allowed);
   if (request.method !== "POST") return json({ error: "POST 요청만 허용합니다." }, 405, allowed);
   if (!env.GEMINI_API_KEY) return json({ error: "Gemini API 키 설정이 완료되지 않았습니다." }, 503, allowed);
   try {
