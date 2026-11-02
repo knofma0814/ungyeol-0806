@@ -196,12 +196,18 @@ function climateInterpretation(c,u){
  else if(cold&&dry) combination="한조(寒燥)의 조합입니다. 차가움과 건조함은 서로 다른 문제이므로 화의 온기와 수의 윤택 작용을 무조건 동시에 더한다고 결론 내리지 않습니다. 어느 쪽이 더 절실한지 월령, 일간, 수화의 뿌리를 비교해야 합니다.";
  else if(hot&&wet) combination="난습(暖濕)의 조합입니다. 온기와 습기가 함께 있는 모습입니다. 화가 습기를 움직일 만큼 힘이 있는지, 토가 물기를 적절히 제어하는지 살피되, 과한 화·토로 조열해지지 않도록 균형을 확인합니다.";
  else combination="한난과 조습 중 한 축만 두드러지거나 두 축 모두 중간 범위입니다. 한 가지 조후 처방을 앞세우기보다 실제로 치우친 축이 있는지 확인하고, 일간의 강약·격국·통근과 함께 우선순위를 정합니다.";
+ let practical;
+ if(cold&&wet) practical="참고자료 · 일정이 정체되거나 준비만 길어지는 상황이라면, 일을 작은 단계로 나누고 시작 시점을 정해 두는 방법을 점검해 볼 수 있습니다. 업무·학습 환경에서는 환기와 활동 시간을 확보하는 식의 현실적인 조정도 생각해 볼 수 있습니다.";
+ else if(hot&&dry) practical="참고자료 · 일정과 업무량이 과도하게 몰리는지 점검하고, 중요한 결정 전 잠시 쉬는 간격을 둘 수 있습니다. 수면·수분 섭취·휴식은 누구에게나 필요한 기본 관리이며, 사주만으로 건강 상태를 판단하지 않습니다.";
+ else if(cold&&dry) practical="참고자료 · 혼자 감당하는 일이 많다면 도움을 요청할 사람과 소통할 시간을 미리 정해 둘 수 있습니다. 동시에 일을 시작하기 전 필요한 준비와 회복 시간을 현실적으로 확보하는 방법을 살펴보세요.";
+ else if(hot&&wet) practical="참고자료 · 여러 일을 동시에 벌이고 있다면 우선순위를 세우고 한 번에 처리할 일을 줄여 볼 수 있습니다. 일정표와 마감 기준을 분명히 해 실행 흐름을 정리하는 데 활용하세요.";
+ else practical="참고자료 · 특정한 생활 방식을 사주에 맞춰 바꿀 필요는 없습니다. 현재의 업무·학습·휴식 리듬을 살펴보고 실제로 불편한 부분이 있을 때 작은 조정을 시도하는 정도로 활용하세요.";
  const direction=u.climateCandidates?.length
   ? "현재 계산에서 조후 후보로 검토된 오행은 "+u.climateCandidates.map(x=>x.element+"("+x.reason+")").join(" · ")+"입니다. 이는 후보 목록이지 확정 용신이 아닙니다."
   : "현재 계절·기후 지표만으로는 특정 조후 후보를 뚜렷하게 세우지 않았습니다. 중화에 가까운 경우 억부·격국 등 다른 기준을 함께 살핍니다.";
  const fireRoot=c.climateRoots.filter(x=>/병|정/.test(x)),waterRoot=c.climateRoots.filter(x=>/임|계/.test(x));
  const evidence="원국 근거를 보면 화·수 천간 투출은 "+(c.exposed.join(" · ")||"확인되지 않음")+"이며, 지지 속 화·수 뿌리는 "+(c.climateRoots.join(" · ")||"확인되지 않음")+"입니다. 투출은 겉으로 드러난 정도, 통근은 지지 안에 뿌리를 둔 정도를 뜻합니다. 따라서 오행의 개수만으로 조후가 해결되었다고 보지 않습니다.";
- return '<h3>한난조습에 따른 실제 풀이</h3><div class="explain"><b>1. 한난(寒暖)의 해석</b><p>'+tempText+'</p></div><div class="explain"><b>2. 조습(燥濕)의 해석</b><p>'+moistText+'</p></div><div class="explain"><b>3. 두 기후 축을 함께 본 종합 해석</b><p>'+combination+'</p></div><div class="explain"><b>4. 이 사주의 조후 후보와 원국 근거</b><p>'+direction+'</p><p>'+evidence+'</p></div><p class="muted">한습·조열 등의 명칭은 기후 경향을 설명하는 전통적 표현입니다. 실제 조후용신은 월령, 일간의 왕쇠, 지장간의 뿌리, 투출, 합충 및 격국을 종합해 판단해야 하며 이 자동 계산만으로 확정하지 않습니다.</p>';
+ return '<h3>1. 사주 진단 — 한난조습 분석</h3><p>먼저 태어난 계절과 원국의 오행 분포를 바탕으로 기후적 편향을 살펴봅니다. 아래 내용은 이 사주의 구조를 풀이한 진단이며, 생활 조언보다 우선하는 분석 결과입니다.</p><div class="explain"><b>한난(寒暖)의 진단</b><p>'+tempText+'</p></div><div class="explain"><b>조습(燥濕)의 진단</b><p>'+moistText+'</p></div><div class="explain"><b>한난조습 종합 진단</b><p>'+combination+'</p></div><div class="explain"><b>조후 후보와 원국 근거</b><p>'+direction+'</p><p>'+evidence+'</p></div><h3>2. 현대 생활 적용 — 참고자료</h3><p>'+practical+'</p><p class="muted">이 항목은 전통 명리 해석을 현대 생활에 비유한 참고자료입니다. 사주가 실제 성격·업무 능력·건강·생활 습관을 진단하거나 특정 행동을 지시하는 것은 아닙니다. 본인의 현실과 맞지 않으면 적용하지 않아도 됩니다.</p><p class="muted">한습·조열 등의 명칭은 기후 경향을 설명하는 전통적 표현입니다. 실제 조후용신은 월령, 일간의 왕쇠, 지장간의 뿌리, 투출, 합충 및 격국을 종합해 판단해야 하며 이 자동 계산만으로 확정하지 않습니다.</p>';;
 }
 function analyzeStructure(obj){
  const day=parts(obj.day).stem;if(!STEM_ELEMENT[day])return {error:"일간 정보가 없습니다."};
