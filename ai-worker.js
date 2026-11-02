@@ -58,7 +58,7 @@ export default {
     return json({ error: "질문을 입력해 주세요." }, 400, allowed);
    }
    const context = JSON.stringify(body.context || {}).slice(0, 14000);
-   const model = env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+   const model = env.GEMINI_MODEL || "gemini-3.5-flash-lite";
    const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/" +
     encodeURIComponent(model) + ":generateContent";
    const contents = safe.map(m => ({
