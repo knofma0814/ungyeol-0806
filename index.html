@@ -36,6 +36,8 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 /* 운결 AI 운명술사 상담 */
 .ai-chat{margin-top:18px}.ai-chat-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}.ai-orb{width:38px;height:38px;display:grid;place-items:center;border:1px solid #8f784d;border-radius:50%;background:radial-gradient(circle,#5a4930,#17271f);color:#e8ce98;font-size:20px}.ai-chat-head strong{color:var(--gold)}.ai-chat-head small{display:block;color:var(--muted);font-size:12px}.ai-config{margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0d1b15}.ai-config label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}.ai-config input{font-size:13px}.ai-messages{display:flex;flex-direction:column;gap:10px;max-height:460px;overflow:auto;padding:12px;background:#0c1913;border:1px solid var(--line);border-radius:12px}.ai-message{max-width:92%;padding:11px 13px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}.ai-message.assistant{align-self:flex-start;background:#20372b;border:1px solid #3d5745}.ai-message.user{align-self:flex-end;background:#4b412e;border:1px solid #806d46}.ai-compose{display:flex;gap:8px;align-items:flex-end;margin-top:10px}.ai-compose textarea{flex:1;min-width:0;resize:vertical;min-height:48px;max-height:130px;background:#0d1b15;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit}.ai-compose button{margin:0;white-space:nowrap}.ai-suggestions{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.ai-suggestions button{margin:0;padding:7px 10px;font-size:12px}.ai-status{min-height:22px;margin-top:8px;color:var(--muted);font-size:12px}.ai-note{color:var(--muted);font-size:12px;margin-top:12px}
 @media(max-width:520px){.ai-compose{align-items:stretch}.ai-compose button{padding:10px}.ai-message{max-width:96%}}
+
+.saved-chart-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.saved-chart-tools input{flex:1;min-width:150px}.saved-list{display:grid;gap:8px;margin-top:12px}.saved-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px;background:#0d1b15;border:1px solid var(--line);border-radius:10px}.saved-item .meta{min-width:0}.saved-item strong{color:var(--gold)}.saved-item small{display:block;color:var(--muted);font-size:12px}.saved-item .actions{display:flex;gap:6px;flex-shrink:0}.saved-item button{margin:0;padding:7px 9px;font-size:12px}.saved-empty{color:var(--muted);font-size:13px;padding:10px 2px}
 </style>
 </head>
 <body>
@@ -58,6 +60,9 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <div class="field"><label for="dayBoundary">자시 일주 기준</label><select id="dayBoundary"><option value="midnight">자정 기준</option><option value="jasi">자시 기준</option><option value="splitJasi">야자시 분리</option></select></div>
 </div>
 <button id="calculateButton">내 사주 계산하기</button>
+<div class="saved-chart-tools"><input id="saveChartName" type="text" maxlength="30" placeholder="저장할 이름 또는 별칭"><button type="button" class="secondary" id="saveChartButton">현재 사주 저장</button></div>
+<div class="sub" style="margin-top:8px">저장한 사주는 이 기기의 브라우저에 보관됩니다.</div>
+<div id="savedChartList" class="saved-list" aria-live="polite"></div>
 <div id="status" class="sub" aria-live="polite"></div>
 <div class="notice">만세력 엔진을 온라인으로 불러옵니다. 최초 실행 시 인터넷 연결이 필요합니다. 출생 시각을 모르면 시주를 계산하지 않고 표시합니다.</div>
 </section>
@@ -350,7 +355,41 @@ function renderLuck(result){
   return `<tr><td>${i+1}</td><td><b>${escapeHTML(pillar||"—")}</b></td><td>${escapeHTML(x.age??"—")}세</td><td>${god}</td><td>${p.stem?STEM_ELEMENT[p.stem]:"—"} · ${p.branch||"—"}</td><td>${stage}</td><td>${branchRelations.length?branchRelations.map(escapeHTML).join("<br>"):"—"}</td></tr>`;}).join("");
  show("luckReport",`<p>진행 방향: ${l.forward?"순행":"역행"}</p><p>대운 시작 나이: ${escapeHTML(l.startAge??"확인 불가")}</p><p>시작 계산값: ${escapeHTML(l.startYears??"—")}년 ${escapeHTML(l.startMonths??"—")}개월 ${escapeHTML(l.startDays??"—")}일</p><table><thead><tr><th>순서</th><th>대운</th><th>나이</th><th>천간 십성</th><th>오행</th><th>지지 십이운성</th><th>원국 지지 관계</th></tr></thead><tbody>${rows}</tbody></table><p class="muted">대운의 십성은 원국 일간을 기준으로 계산하고, 십이운성은 대운 지지를 기준으로 표시합니다. 대운 지지와 원국의 합·충·형·파·해도 함께 표시하지만, 이 관계만으로 길흉을 판정하지 않습니다. 운결 통합 판정 용신은 ${final?.finalYongshin||"미산출"}(${final?.confidence||"—"})이며, 대운의 유불리는 이 오행과 격국·세운의 실제 작용을 함께 검토합니다.</p>`);
 }
-async function calculateMain(){const btn=$("calculateButton");btn.disabled=true;$("status").textContent="만세력 계산 중…";try{const calc=await loadEngine(),input=buildInput();const result=calc({...input});const obj={...result.toObject(),__unknownTime:input.unknown};natalResult=result;natalObj=obj;renderChart(obj,input.unknown);renderBasic(obj);renderLuck(result);$("status").innerHTML='<span class="ok">계산이 완료되었습니다.</span>';}catch(e){$("status").innerHTML=`<span class="error">${escapeHTML(e.message||e)}</span>`;}finally{btn.disabled=false;}}
+async const SAVED_CHARTS_KEY="ungyeol.savedCharts.v1";
+function readSavedCharts(){try{const value=JSON.parse(localStorage.getItem(SAVED_CHARTS_KEY)||"[]");return Array.isArray(value)?value:[];}catch{return [];}}
+function writeSavedCharts(items){localStorage.setItem(SAVED_CHARTS_KEY,JSON.stringify(items));}
+function currentBirthData(prefix=""){
+ const partner=prefix==="partner",get=(main,other)=>$(partner?other:main);
+ return {date:get("birthDate","partnerDate").value,calendar:get("calendarType","partnerCalendar").value,leap:get("leapMonth","partnerLeap").value,gender:get("gender","partnerGender").value,timeMode:get("timeMode","partnerTimeMode").value,hour:get("birthHour","partnerHour").value,minute:get("birthMinute","partnerMinute").value,dayBoundary:get("dayBoundary","partnerBoundary").value};
+}
+function applyBirthData(data,prefix=""){
+ const partner=prefix==="partner",set=(main,other,value)=>{const el=$(partner?other:main);if(el)el.value=value;};
+ set("birthDate","partnerDate",data.date);set("calendarType","partnerCalendar",data.calendar||"solar");set("leapMonth","partnerLeap",data.leap||"false");set("gender","partnerGender",data.gender||"male");set("timeMode","partnerTimeMode",data.timeMode||"known");set("birthHour","partnerHour",data.hour||"23");set("birthMinute","partnerMinute",data.minute||"0");set("dayBoundary","partnerBoundary",data.dayBoundary||"midnight");
+ $(partner?"partnerHourField":"hourField").classList.toggle("hidden",(data.timeMode||"known")==="unknown");
+ $(partner?"partnerMinuteField":"minuteField").classList.toggle("hidden",(data.timeMode||"known")==="unknown");
+ $(partner?"partnerLeapField":"leapField").classList.toggle("hidden",(data.calendar||"solar")!=="lunar");
+}
+function renderSavedCharts(){
+ const box=$("savedChartList"),items=readSavedCharts();
+ if(!items.length){box.innerHTML='<div class="saved-empty">아직 저장된 사주가 없습니다. 출생 정보를 입력한 뒤 저장해 보세요.</div>';return;}
+ box.innerHTML=items.map(item=>{const d=item.data||{};return '<div class="saved-item" data-saved-id="'+escapeHTML(item.id)+'"><div class="meta"><strong>'+escapeHTML(item.name)+'</strong><small>'+escapeHTML(d.date||"생년월일 미상")+' · '+(d.calendar==="lunar"?"음력":"양력")+' · '+(d.timeMode==="unknown"?"시간 미상":"출생 시간 입력")+'</small></div><div class="actions"><button type="button" class="secondary" data-load-saved>불러오기</button><button type="button" class="secondary" data-delete-saved>삭제</button></div></div>';}).join("");
+}
+function saveCurrentChart(){
+ const name=$("saveChartName").value.trim(),data=currentBirthData();
+ if(!data.date){$("status").textContent="먼저 생년월일을 입력해 주세요.";return;}
+ if(!name){$("status").textContent="저장할 이름이나 별칭을 입력해 주세요.";return;}
+ const items=readSavedCharts(),existing=items.findIndex(x=>x.name===name);
+ const entry={id:existing>=0?items[existing].id:(Date.now().toString(36)+Math.random().toString(36).slice(2,7)),name,data,savedAt:new Date().toISOString()};
+ if(existing>=0){if(!confirm("같은 이름의 저장 정보가 있습니다. 덮어쓸까요?"))return;items[existing]=entry;}else items.unshift(entry);
+ try{writeSavedCharts(items);renderSavedCharts();$("saveChartName").value="";$("status").textContent="‘"+name+"’의 사주를 이 기기에 저장했습니다.";}catch(e){$("status").textContent="저장 공간을 사용할 수 없습니다. 브라우저 저장 설정을 확인해 주세요.";}
+}
+function handleSavedChartAction(event){
+ const item=event.target.closest(".saved-item");if(!item)return;
+ const entry=readSavedCharts().find(x=>x.id===item.dataset.savedId);if(!entry)return;
+ if(event.target.closest("[data-load-saved]")){applyBirthData(entry.data);calculateMain();$("status").textContent="‘"+entry.name+"’의 출생 정보를 불러왔습니다. 계산 결과를 확인해 주세요.";}
+ if(event.target.closest("[data-delete-saved]")){if(!confirm("‘"+entry.name+"’의 저장 정보를 삭제할까요?"))return;writeSavedCharts(readSavedCharts().filter(x=>x.id!==entry.id));renderSavedCharts();}
+}
+function calculateMain(){const btn=$("calculateButton");btn.disabled=true;$("status").textContent="만세력 계산 중…";try{const calc=await loadEngine(),input=buildInput();const result=calc({...input});const obj={...result.toObject(),__unknownTime:input.unknown};natalResult=result;natalObj=obj;renderChart(obj,input.unknown);renderBasic(obj);renderLuck(result);$("status").innerHTML='<span class="ok">계산이 완료되었습니다.</span>';}catch(e){$("status").innerHTML=`<span class="error">${escapeHTML(e.message||e)}</span>`;}finally{btn.disabled=false;}}
 const STEM_COMB=[["갑","기"],["을","경"],["병","신"],["정","임"],["무","계"]],STEM_CLASH=[["갑","경"],["을","신"],["병","임"],["정","계"]];
 const PAIRS={육합:[["자","축"],["인","해"],["묘","술"],["진","유"],["사","신"],["오","미"]],충:[["자","오"],["축","미"],["인","신"],["묘","유"],["진","술"],["사","해"]],해:[["자","미"],["축","오"],["인","사"],["묘","진"],["신","해"],["유","술"]],파:[["자","유"],["축","진"],["인","해"],["묘","오"],["사","신"],["미","술"]],형:[["인","사"],["사","신"],["신","인"],["축","술"],["술","미"],["미","축"],["자","묘"],["묘","자"]],원진:[["자","미"],["축","오"],["인","유"],["묘","신"],["진","해"],["사","술"]]};
 const TRIADS=[["신","자","진"],["해","묘","미"],["인","오","술"],["사","유","축"]];
@@ -543,7 +582,7 @@ async function sendAIQuestion(prefill){
  finally{btn.disabled=false;input.focus();}
 }
 
-function init(){const y=$("fortuneYear");const switchPane=name=>{for(const [tab,pane] of [["personalTab","personalPane"],["compatTab","compatPane"],["aiTab","aiPane"]]){$(tab).classList.toggle("active",tab===name+"Tab");$(pane).classList.toggle("active",pane===name+"Pane");}};$("personalTab").addEventListener("click",()=>switchPane("personal"));$("compatTab").addEventListener("click",()=>switchPane("compat"));$("aiTab").addEventListener("click",()=>switchPane("ai"));$("compatReportButton").addEventListener("click",compatFullReport);const now=new Date().getFullYear();for(let n=now-5;n<=now+10;n++){const o=document.createElement("option");o.value=n;o.textContent=n+"년";if(n===now)o.selected=true;y.append(o);}for(const [id,fields] of [["timeMode",["hourField","minuteField"]],["partnerTimeMode",["partnerHourField","partnerMinuteField"]]]){const sync=()=>fields.forEach(field=>$(field).classList.toggle("hidden",$(id).value==="unknown"));$(id).addEventListener("change",sync);sync();}for(const [id,field] of [["calendarType","leapField"],["partnerCalendar","partnerLeapField"]]){$(id).addEventListener("change",()=>$(field).classList.toggle("hidden",$(id).value!=="lunar"));$(field).classList.toggle("hidden",$(id).value!=="lunar");}$("calculateButton").addEventListener("click",calculateMain);$("compatibilityButton").addEventListener("click",calcPartner);$("fortuneButton").addEventListener("click",calcYear);$("fullReportButton").addEventListener("click",fullReport);$("printButton").addEventListener("click",()=>window.print());$("aiSendButton").addEventListener("click",()=>sendAIQuestion());$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAIQuestion();}});document.querySelectorAll("[data-ai-question]").forEach(b=>b.addEventListener("click",()=>sendAIQuestion(b.dataset.aiQuestion)));}
+function init(){const y=$("fortuneYear");const switchPane=name=>{for(const [tab,pane] of [["personalTab","personalPane"],["compatTab","compatPane"],["aiTab","aiPane"]]){$(tab).classList.toggle("active",tab===name+"Tab");$(pane).classList.toggle("active",pane===name+"Pane");}};$("personalTab").addEventListener("click",()=>switchPane("personal"));$("compatTab").addEventListener("click",()=>switchPane("compat"));$("aiTab").addEventListener("click",()=>switchPane("ai"));$("compatReportButton").addEventListener("click",compatFullReport);const now=new Date().getFullYear();for(let n=now-5;n<=now+10;n++){const o=document.createElement("option");o.value=n;o.textContent=n+"년";if(n===now)o.selected=true;y.append(o);}for(const [id,fields] of [["timeMode",["hourField","minuteField"]],["partnerTimeMode",["partnerHourField","partnerMinuteField"]]]){const sync=()=>fields.forEach(field=>$(field).classList.toggle("hidden",$(id).value==="unknown"));$(id).addEventListener("change",sync);sync();}for(const [id,field] of [["calendarType","leapField"],["partnerCalendar","partnerLeapField"]]){$(id).addEventListener("change",()=>$(field).classList.toggle("hidden",$(id).value!=="lunar"));$(field).classList.toggle("hidden",$(id).value!=="lunar");}$("calculateButton").addEventListener("click",calculateMain);$("saveChartButton").addEventListener("click",saveCurrentChart);$("savedChartList").addEventListener("click",handleSavedChartAction);renderSavedCharts();$("compatibilityButton").addEventListener("click",calcPartner);$("fortuneButton").addEventListener("click",calcYear);$("fullReportButton").addEventListener("click",fullReport);$("printButton").addEventListener("click",()=>window.print());$("aiSendButton").addEventListener("click",()=>sendAIQuestion());$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAIQuestion();}});document.querySelectorAll("[data-ai-question]").forEach(b=>b.addEventListener("click",()=>sendAIQuestion(b.dataset.aiQuestion)));}
 init();
 </script>
 <script>
