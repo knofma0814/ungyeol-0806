@@ -178,6 +178,31 @@ function climatePlain(c){
  let b=wet?"습기가 머물기 쉬운지 살피고, 막힌 기운을 덜어 주거나 말려 주는 역할이 필요한지 검토합니다.":dry?"건조해지기 쉬운지 살피고, 메마른 기운을 적셔 주는 역할이 필요한지 검토합니다.":"습하거나 건조한 쪽으로 크게 기운다고 단정하기는 어렵습니다.";
  return a+" "+b+" 다만 이는 계절과 오행 분포로 살펴본 첫 단서이며, 이 문장만으로 용신을 확정하지 않습니다.";
 }
+function climateInterpretation(c,u){
+ const cold=c.temp<=-.8,hot=c.temp>=.8,wet=c.moist>=.5,dry=c.moist<=-.5;
+ const tempText=cold
+  ?"한(寒)이 우세한 쪽입니다. 겨울의 냉기가 남아 있거나 화의 온기가 상대적으로 약하다는 뜻으로 풀이합니다. 조후에서는 먼저 화가 얼어 있는 기운을 덥히고 움직이게 하는 역할을 하는지 살핍니다. 화가 원국에 있어도 뿌리가 없거나 계절의 수기에 눌리면 실제 조절력은 약할 수 있습니다."
+  :hot
+  ?"난(暖) 또는 열(熱)이 우세한 쪽입니다. 계절의 열기에 화의 기운까지 더해져 조열해질 가능성을 살핍니다. 조후에서는 수가 열을 식히고 기운을 윤택하게 하는 역할을 하는지 봅니다. 다만 수가 있어도 뿌리가 약하거나 토에 막히면 충분히 작용한다고 보기 어렵습니다."
+  :"한난은 중간 범위입니다. 차고 뜨거운 문제를 최우선으로 삼기보다 월령과 전체 오행의 생극을 먼저 살핍니다. 이 경우 조후용신을 기계적으로 화나 수로 정하지 않습니다.";
+ const moistText=wet
+  ?"습(濕)이 우세한 쪽입니다. 수기가 많거나 계절 자체가 습한데 화의 건조·온화 작용이 충분하지 않은 상황인지 살핍니다. 전통 조후에서는 화로 따뜻하게 말리고, 필요에 따라 토가 물기를 제어하는 작용을 검토합니다. 그러나 토가 지나치면 수의 흐름을 막고, 화가 지나치면 반대로 메마르게 할 수 있습니다."
+  :dry
+  ?"조(燥)가 우세한 쪽입니다. 수기가 부족하거나 화·금의 작용으로 수분이 마르기 쉬운 구조인지 살핍니다. 조후에서는 수가 적셔 주고 열기를 식히는 역할을 하는지 검토합니다. 금은 수를 생하는 근원이 될 수 있지만, 금 자체의 건조·수렴 성향까지 함께 보아야 하므로 금이 있다고 곧 윤택해지는 것은 아닙니다."
+  :"조습은 중간 범위입니다. 습기를 말리거나 수분을 보태는 일을 우선 과제로 단정하기 어렵습니다. 수와 화의 양뿐 아니라 어느 계절에 놓였는지, 지장간에 뿌리가 있는지를 함께 봅니다.";
+ let combination;
+ if(cold&&wet) combination="한습(寒濕)의 조합입니다. 차고 습한 기운이 함께 남는 형태이므로 단순히 불을 더하는 것만이 아니라, 화가 실제로 온기를 내고 습기를 움직일 수 있는지 살핍니다. 화가 약하면 조후상 화를 우선 검토할 수 있고, 토는 습기를 제어하는 보조 역할인지 확인합니다.";
+ else if(hot&&dry) combination="조열(燥熱)의 조합입니다. 뜨겁고 건조한 방향이 겹치므로 수의 냉각·윤택 작용이 핵심 검토 대상입니다. 다만 수가 뿌리 없이 떠 있거나 증발·제어되는 구조라면 글자 하나만으로 조후가 해결된다고 볼 수 없습니다.";
+ else if(cold&&dry) combination="한조(寒燥)의 조합입니다. 차가움과 건조함은 서로 다른 문제이므로 화의 온기와 수의 윤택 작용을 무조건 동시에 더한다고 결론 내리지 않습니다. 어느 쪽이 더 절실한지 월령, 일간, 수화의 뿌리를 비교해야 합니다.";
+ else if(hot&&wet) combination="난습(暖濕)의 조합입니다. 온기와 습기가 함께 있는 모습입니다. 화가 습기를 움직일 만큼 힘이 있는지, 토가 물기를 적절히 제어하는지 살피되, 과한 화·토로 조열해지지 않도록 균형을 확인합니다.";
+ else combination="한난과 조습 중 한 축만 두드러지거나 두 축 모두 중간 범위입니다. 한 가지 조후 처방을 앞세우기보다 실제로 치우친 축이 있는지 확인하고, 일간의 강약·격국·통근과 함께 우선순위를 정합니다.";
+ const direction=u.climateCandidates?.length
+  ? "현재 계산에서 조후 후보로 검토된 오행은 "+u.climateCandidates.map(x=>x.element+"("+x.reason+")").join(" · ")+"입니다. 이는 후보 목록이지 확정 용신이 아닙니다."
+  : "현재 계절·기후 지표만으로는 특정 조후 후보를 뚜렷하게 세우지 않았습니다. 중화에 가까운 경우 억부·격국 등 다른 기준을 함께 살핍니다.";
+ const fireRoot=c.climateRoots.filter(x=>/병|정/.test(x)),waterRoot=c.climateRoots.filter(x=>/임|계/.test(x));
+ const evidence="원국 근거를 보면 화·수 천간 투출은 "+(c.exposed.join(" · ")||"확인되지 않음")+"이며, 지지 속 화·수 뿌리는 "+(c.climateRoots.join(" · ")||"확인되지 않음")+"입니다. 투출은 겉으로 드러난 정도, 통근은 지지 안에 뿌리를 둔 정도를 뜻합니다. 따라서 오행의 개수만으로 조후가 해결되었다고 보지 않습니다.";
+ return '<h3>한난조습에 따른 실제 풀이</h3><div class="explain"><b>1. 한난(寒暖)의 해석</b><p>'+tempText+'</p></div><div class="explain"><b>2. 조습(燥濕)의 해석</b><p>'+moistText+'</p></div><div class="explain"><b>3. 두 기후 축을 함께 본 종합 해석</b><p>'+combination+'</p></div><div class="explain"><b>4. 이 사주의 조후 후보와 원국 근거</b><p>'+direction+'</p><p>'+evidence+'</p></div><p class="muted">한습·조열 등의 명칭은 기후 경향을 설명하는 전통적 표현입니다. 실제 조후용신은 월령, 일간의 왕쇠, 지장간의 뿌리, 투출, 합충 및 격국을 종합해 판단해야 하며 이 자동 계산만으로 확정하지 않습니다.</p>';
+}
 function analyzeStructure(obj){
  const day=parts(obj.day).stem;if(!STEM_ELEMENT[day])return {error:"일간 정보가 없습니다."};
  const positions=[["년주","year"],["월주","month"],["일주","day"],["시주","hour"]].filter(([n,k])=>!(k==="hour"&&obj.__unknownTime));
@@ -344,7 +369,7 @@ function renderBasic(obj){
  const voids=Array.isArray(natalResult?.voidBranches)?natalResult.voidBranches:[];
  show("voidReport",voids.length?`<p><b>일주 기준 공망 지지:</b> ${voids.map(escapeHTML).join(" · ")}</p><p>공망은 일주를 기준으로 순(旬)에 포함되지 않는 두 지지를 가리키는 전통 명리 개념입니다. 해당 지지가 원국이나 운에서 만난다고 무조건 흉하다고 보지 않으며, 어떤 십성과 자리에서 작용하는지 함께 살펴야 합니다.</p>`:"만세력 엔진에서 공망 자료를 제공하지 않았습니다.");
  show("strengthReport",s.error?s.error:`<p>일간: <b>${s.stem} (${s.day})</b> · 강약 참고: <b>${s.label}</b></p><p>월령 오행: <b>${s.seasonElement}</b> · 계절 보정 생조 세력 ${s.support.toFixed(2)} / 기타 세력 ${s.other.toFixed(2)} · 참고 비율 ${(s.ratio*100).toFixed(1)}%</p><p>원분포: ${Object.entries(s.c).map(([k,v])=>k+" "+v.toFixed(2)).join(" · ")}</p><p>월령 보정계수: ${Object.entries(s.seasonalFactors).map(([k,v])=>k+" "+v.toFixed(1)).join(" · ")}</p><p class="muted">오행의 단순 개수 대신 월령의 왕상휴수사 관계를 참고해 계절 가중치를 적용한 보조 지표입니다. 지장간의 실제 세력, 통근의 깊이, 투출과 합화, 격국의 성패를 모두 계산한 정통 신강신약 판정은 아니며 계수와 경계값은 참고용입니다.</p>`);
- show("climateReport",c.error?c.error:`<p class="lead">${c.season}의 계절 기운을 바탕으로 ${c.t}, ${c.h}의 경향입니다.</p><div class="explain"><b>한난 판단</b><p>${c.tempBasis}</p><p>${c.tempMeaning}</p><p class="basis">보조값 ${c.temp.toFixed(2)}</p></div><div class="explain"><b>조습 판단</b><p>${c.moistBasis}</p><p>${c.moistMeaning}</p><p class="basis">보조값 ${c.moist.toFixed(2)}</p></div><p><b>월지 지장간:</b> ${c.monthQi.map(x=>x.stem+"("+x.role+")").join(" · ")}</p><p><b>화·수 투출:</b> ${c.exposed.join(" · ")||"확인되지 않음"}</p><p><b>화·수 통근:</b> ${c.climateRoots.join(" · ")||"확인되지 않음"}</p><p><b>조후용신 후보:</b> ${u.climateCandidates.map(x=>x.element+" — "+x.reason).join(" / ")||"계절 지표만으로 특정하기 어려움"}</p><p class="muted">조후용신은 계절뿐 아니라 일간과 전체 원국의 균형을 함께 판단합니다.</p>`);
+ show("climateReport",c.error?c.error:`<p class="lead">${c.season}의 계절 기운을 바탕으로 ${c.t}, ${c.h}의 경향입니다.</p><div class="explain"><b>한난 판단</b><p>${c.tempBasis}</p><p>${c.tempMeaning}</p><p class="basis">보조값 ${c.temp.toFixed(2)}</p></div><div class="explain"><b>조습 판단</b><p>${c.moistBasis}</p><p>${c.moistMeaning}</p><p class="basis">보조값 ${c.moist.toFixed(2)}</p></div>${climateInterpretation(c,u)}<p><b>월지 지장간:</b> ${c.monthQi.map(x=>x.stem+"("+x.role+")").join(" · ")}</p><p><b>화·수 투출:</b> ${c.exposed.join(" · ")||"확인되지 않음"}</p><p><b>화·수 통근:</b> ${c.climateRoots.join(" · ")||"확인되지 않음"}</p><p><b>조후용신 후보:</b> ${u.climateCandidates.map(x=>x.element+" — "+x.reason).join(" / ")||"계절 지표만으로 특정하기 어려움"}</p><p class="muted">조후용신은 계절뿐 아니라 일간과 전체 원국의 균형을 함께 판단합니다.</p>`);
  const final=finalizeYongshin(obj);
  show("usefulReport",u.error?u.error:`<h3>최종 용신 판정</h3><div class="notice"><p><b>운결 통합 판정: ${final.finalYongshin} — ${final.confidence}</b></p><p>격국·월령, 억부, 조후, 통관을 함께 비교해 가장 높은 점수의 오행 하나를 대표 용신으로 표시합니다.</p><p><b>판정 근거:</b> ${final.reasons.join(" · ")||"각 기준의 점수가 비슷해 잠정적으로 선택했습니다."}</p><p><b>차순위:</b> ${final.ranked.slice(1,3).map(x=>x.element+"("+x.score+")").join(" · ")}</p></div><h3>각 용신 체계별 검토</h3><p><b>격국·월령:</b> ${u.pattern.candidate} / 월령 본기 십성 ${u.pattern.main?.god||"자료 없음"} ${u.pattern.main?.exposed?"(투출)":"(미투출)"}</p><p><b>억부용신 후보:</b> ${u.suppression.join(" · ")||"강약이 중화 범위여서 특정 후보를 두지 않음"} — ${u.supportSide}라는 보조 강약 지표에서 추린 후보입니다.</p><p><b>조후용신 후보:</b> ${u.climateCandidates.map(x=>x.element+"("+x.reason+")").join(" · ")||"뚜렷한 조후 후보 없음"}</p><p><b>통관용신 검토:</b> ${u.bridge.map(x=>x.conflict+" → "+x.element+(x.present?"(존재)":"(미약)")).join(" · ")||"뚜렷한 상극 연결 후보 없음"}</p><h3>희신·기신 참고</h3><p><b>보조 희신 후보:</b> ${final.favorable.join(" · ")||"추가 검토 필요"} · <b>주의 오행:</b> ${final.unfavorable.join(" · ")||"뚜렷하게 배제할 오행 없음"}</p><p><b>원국에 없는 오행:</b> ${u.missing.join(" · ")||"없음"} (부족하다는 이유만으로 용신이 되지는 않습니다.)</p><p class="muted">${final.finalNote}</p>`);
 }
