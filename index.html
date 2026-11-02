@@ -43,7 +43,7 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <body>
 <header><div class="brand">運結</div><p>운결 · 사주와 인연의 흐름을 읽다</p></header>
 <main>
-<nav class="tabbar" aria-label="분석 메뉴"><button type="button" id="personalTab" class="active">나의 사주</button><button type="button" id="compatTab">궁합 분석</button><button type="button" id="aiTab">AI 상담</button></nav>
+<nav class="tabbar" aria-label="분석 메뉴"><button type="button" id="personalTab" class="active">나의 사주</button><button type="button" id="savedTab">저장목록</button><button type="button" id="compatTab">궁합 분석</button><button type="button" id="aiTab">AI 상담</button></nav>
 <div id="personalPane" class="pane active">
 <section class="panel">
 <h2>나의 출생 정보</h2>
@@ -62,7 +62,7 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <button id="calculateButton">내 사주 계산하기</button>
 <div class="saved-chart-tools"><input id="saveChartName" type="text" maxlength="30" placeholder="저장할 이름 또는 별칭"><button type="button" class="secondary" id="saveChartButton">현재 사주 저장</button></div>
 <div class="sub" style="margin-top:8px">저장한 사주는 이 기기의 브라우저에 보관됩니다.</div>
-<div id="savedChartList" class="saved-list" aria-live="polite"></div>
+
 <div id="status" class="sub" aria-live="polite"></div>
 <div class="notice">만세력 엔진을 온라인으로 불러옵니다. 최초 실행 시 인터넷 연결이 필요합니다. 출생 시각을 모르면 시주를 계산하지 않고 표시합니다.</div>
 </section>
@@ -81,6 +81,7 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 
 <section class="panel"><h2>개인 사주 리포트</h2><p class="sub">나의 원국과 강약·조후·용신 후보·대운을 종합해 풀이합니다.</p><button id="fullReportButton" class="secondary">개인 리포트 만들기</button><button id="printButton" class="secondary">인쇄 / PDF 저장</button><div id="fullReport" class="report"></div></section>
 </div>
+<div id="savedPane" class="pane"><section class="panel"><h2>저장한 사주 목록</h2><p class="sub">저장한 사람을 언제든 다시 불러오거나 궁합 상대방으로 선택할 수 있습니다. 목록은 이 브라우저에 보관됩니다.</p><div class="field"><label for="savedSearch">이름 검색</label><input id="savedSearch" type="search" placeholder="이름 또는 별칭 검색"></div><div id="savedChartList" class="saved-list" aria-live="polite"></div><div class="sub">‘불러오기’를 누르면 해당 사주를 다시 조회하고, ‘궁합에 적용’을 누르면 상대방 정보로 설정합니다.</div></section></div>
 <div id="compatPane" class="pane">
 <section class="panel">
 <h2>궁합 분석 · 상대방 정보</h2>
@@ -370,8 +371,8 @@ function applyBirthData(data,prefix=""){
  $(partner?"partnerLeapField":"leapField").classList.toggle("hidden",(data.calendar||"solar")!=="lunar");
 }
 function renderSavedCharts(){
- const box=$("savedChartList"),items=readSavedCharts();
- if(!items.length){box.innerHTML='<div class="saved-empty">아직 저장된 사주가 없습니다. 출생 정보를 입력한 뒤 저장해 보세요.</div>';return;}
+ const box=$("savedChartList"),q=($("savedSearch")?.value||"").trim().toLowerCase(),items=readSavedCharts().filter(x=>!q||String(x.name||"").toLowerCase().includes(q));
+ if(!items.length){box.innerHTML='<div class="saved-empty">저장된 사주가 없거나 검색 결과가 없습니다. 출생 정보를 입력한 뒤 저장해 보세요.</div>';return;}
  box.innerHTML=items.map(item=>{const d=item.data||{};return '<div class="saved-item" data-saved-id="'+escapeHTML(item.id)+'"><div class="meta"><strong>'+escapeHTML(item.name)+'</strong><small>'+escapeHTML(d.date||"생년월일 미상")+' · '+(d.calendar==="lunar"?"음력":"양력")+' · '+(d.timeMode==="unknown"?"시간 미상":"출생 시간 입력")+'</small></div><div class="actions"><button type="button" class="secondary" data-load-saved>불러오기</button><button type="button" class="secondary" data-compat-saved>궁합에 적용</button><button type="button" class="secondary" data-delete-saved>삭제</button></div></div>';}).join("");
 }
 function saveCurrentChart(){
@@ -585,7 +586,7 @@ async function sendAIQuestion(prefill){
  finally{btn.disabled=false;input.focus();}
 }
 
-function init(){const y=$("fortuneYear");const switchPane=name=>{for(const [tab,pane] of [["personalTab","personalPane"],["compatTab","compatPane"],["aiTab","aiPane"]]){$(tab).classList.toggle("active",tab===name+"Tab");$(pane).classList.toggle("active",pane===name+"Pane");}};$("personalTab").addEventListener("click",()=>switchPane("personal"));$("compatTab").addEventListener("click",()=>switchPane("compat"));$("aiTab").addEventListener("click",()=>switchPane("ai"));$("compatReportButton").addEventListener("click",compatFullReport);const now=new Date().getFullYear();for(let n=now-5;n<=now+10;n++){const o=document.createElement("option");o.value=n;o.textContent=n+"년";if(n===now)o.selected=true;y.append(o);}for(const [id,fields] of [["timeMode",["hourField","minuteField"]],["partnerTimeMode",["partnerHourField","partnerMinuteField"]]]){const sync=()=>fields.forEach(field=>$(field).classList.toggle("hidden",$(id).value==="unknown"));$(id).addEventListener("change",sync);sync();}for(const [id,field] of [["calendarType","leapField"],["partnerCalendar","partnerLeapField"]]){$(id).addEventListener("change",()=>$(field).classList.toggle("hidden",$(id).value!=="lunar"));$(field).classList.toggle("hidden",$(id).value!=="lunar");}$("calculateButton").addEventListener("click",calculateMain);$("saveChartButton").addEventListener("click",saveCurrentChart);$("savedChartList").addEventListener("click",handleSavedChartAction);renderSavedCharts();$("compatibilityButton").addEventListener("click",calcPartner);$("fortuneButton").addEventListener("click",calcYear);$("fullReportButton").addEventListener("click",fullReport);$("printButton").addEventListener("click",()=>window.print());$("aiSendButton").addEventListener("click",()=>sendAIQuestion());$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAIQuestion();}});document.querySelectorAll("[data-ai-question]").forEach(b=>b.addEventListener("click",()=>sendAIQuestion(b.dataset.aiQuestion)));}
+function init(){const y=$("fortuneYear");const switchPane=name=>{for(const [tab,pane] of [["personalTab","personalPane"],["savedTab","savedPane"],["compatTab","compatPane"],["aiTab","aiPane"]]){$(tab).classList.toggle("active",tab===name+"Tab");$(pane).classList.toggle("active",pane===name+"Pane");}};$("personalTab").addEventListener("click",()=>switchPane("personal"));$("savedTab").addEventListener("click",()=>switchPane("saved"));$("compatTab").addEventListener("click",()=>switchPane("compat"));$("aiTab").addEventListener("click",()=>switchPane("ai"));$("compatReportButton").addEventListener("click",compatFullReport);const now=new Date().getFullYear();for(let n=now-5;n<=now+10;n++){const o=document.createElement("option");o.value=n;o.textContent=n+"년";if(n===now)o.selected=true;y.append(o);}for(const [id,fields] of [["timeMode",["hourField","minuteField"]],["partnerTimeMode",["partnerHourField","partnerMinuteField"]]]){const sync=()=>fields.forEach(field=>$(field).classList.toggle("hidden",$(id).value==="unknown"));$(id).addEventListener("change",sync);sync();}for(const [id,field] of [["calendarType","leapField"],["partnerCalendar","partnerLeapField"]]){$(id).addEventListener("change",()=>$(field).classList.toggle("hidden",$(id).value!=="lunar"));$(field).classList.toggle("hidden",$(id).value!=="lunar");}$("calculateButton").addEventListener("click",calculateMain);$("saveChartButton").addEventListener("click",saveCurrentChart);$("savedChartList").addEventListener("click",handleSavedChartAction);$("savedSearch").addEventListener("input",renderSavedCharts);renderSavedCharts();$("compatibilityButton").addEventListener("click",calcPartner);$("fortuneButton").addEventListener("click",calcYear);$("fullReportButton").addEventListener("click",fullReport);$("printButton").addEventListener("click",()=>window.print());$("aiSendButton").addEventListener("click",()=>sendAIQuestion());$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAIQuestion();}});document.querySelectorAll("[data-ai-question]").forEach(b=>b.addEventListener("click",()=>sendAIQuestion(b.dataset.aiQuestion)));}
 init();
 </script>
 <script>
