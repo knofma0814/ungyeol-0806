@@ -356,7 +356,7 @@ function renderLuck(result){
   return `<tr><td>${i+1}</td><td><b>${escapeHTML(pillar||"—")}</b></td><td>${escapeHTML(x.age??"—")}세</td><td>${god}</td><td>${p.stem?STEM_ELEMENT[p.stem]:"—"} · ${p.branch||"—"}</td><td>${stage}</td><td>${branchRelations.length?branchRelations.map(escapeHTML).join("<br>"):"—"}</td></tr>`;}).join("");
  show("luckReport",`<p>진행 방향: ${l.forward?"순행":"역행"}</p><p>대운 시작 나이: ${escapeHTML(l.startAge??"확인 불가")}</p><p>시작 계산값: ${escapeHTML(l.startYears??"—")}년 ${escapeHTML(l.startMonths??"—")}개월 ${escapeHTML(l.startDays??"—")}일</p><table><thead><tr><th>순서</th><th>대운</th><th>나이</th><th>천간 십성</th><th>오행</th><th>지지 십이운성</th><th>원국 지지 관계</th></tr></thead><tbody>${rows}</tbody></table><p class="muted">대운의 십성은 원국 일간을 기준으로 계산하고, 십이운성은 대운 지지를 기준으로 표시합니다. 대운 지지와 원국의 합·충·형·파·해도 함께 표시하지만, 이 관계만으로 길흉을 판정하지 않습니다. 운결 통합 판정 용신은 ${final?.finalYongshin||"미산출"}(${final?.confidence||"—"})이며, 대운의 유불리는 이 오행과 격국·세운의 실제 작용을 함께 검토합니다.</p>`);
 }
-async const SAVED_CHARTS_KEY="ungyeol.savedCharts.v1";
+const SAVED_CHARTS_KEY="ungyeol.savedCharts.v1";
 function readSavedCharts(){try{const value=JSON.parse(localStorage.getItem(SAVED_CHARTS_KEY)||"[]");return Array.isArray(value)?value:[];}catch{return [];}}
 function writeSavedCharts(items){localStorage.setItem(SAVED_CHARTS_KEY,JSON.stringify(items));}
 function currentBirthData(prefix=""){
