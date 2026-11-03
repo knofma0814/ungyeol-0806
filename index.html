@@ -56,9 +56,9 @@ button,input,select{min-height:44px}
 <div class="field hidden" id="leapField"><label for="leapMonth">윤달 여부</label><select id="leapMonth"><option value="false">평달</option><option value="true">윤달</option></select></div>
 <div class="field"><label for="gender">성별</label><select id="gender"><option value="male">남성</option><option value="female">여성</option></select></div>
 <div class="field"><label for="timeMode">출생 시간</label><select id="timeMode"><option value="known">시간 알고 있음</option><option value="unknown">시간 모름</option></select></div>
-<div class="field" id="hourField"><label for="birthTime">출생 시각 (24시간제)</label><input id="birthTime" type="time" step="60" value="12:00"></div>
+<div class="field" id="hourField"><label for="birthTime">출생 시각 (24시간제·KST)</label><input id="birthTime" type="time" step="60" value="12:00"></div>
 <div class="field"><label><input id="trueSolarEnabled" type="checkbox" style="width:auto;margin-right:6px">진태양시 보정 사용</label><span class="sub">출생지 경도와 균시차를 반영합니다.</span></div>
-<div class="field hidden" id="longitudeField"><label for="birthLongitude">출생지 경도 (동경 °)</label><input id="birthLongitude" type="number" min="90" max="150" step="0.001" placeholder="예: 서울 126.978"></div>
+<div class="field hidden" id="longitudeField"><label for="birthLongitude">출생지 경도 (° 동경 + / 서경 -)</label><input id="birthLongitude" type="number" min="-180" max="180" step="0.001" placeholder="예: 서울 126.978"></div>
 <div class="field"><label for="dayBoundary">자시 일주 기준</label><select id="dayBoundary"><option value="midnight">자정 기준</option><option value="jasi">자시 기준</option><option value="splitJasi">야자시 분리</option></select></div>
 </div>
 <button id="calculateButton">내 사주 계산하기</button>
@@ -66,7 +66,7 @@ button,input,select{min-height:44px}
 <div class="sub" style="margin-top:8px">저장한 사주는 이 기기의 브라우저에 보관됩니다.</div>
 
 <div id="status" class="sub" aria-live="polite"></div>
-<div class="notice">만세력 엔진을 온라인으로 불러옵니다. 최초 실행 시 인터넷 연결이 필요합니다. 출생 시각을 모르면 시주를 계산하지 않고 표시합니다.</div>
+<div class="notice">만세력 엔진을 온라인으로 불러옵니다. 출생 시각은 한국 표준시(KST) 기준으로 입력하세요. 해외 출생은 현지 시각을 KST로 변환한 뒤 입력하고, 진태양시 보정에는 실제 출생지 경도를 사용하세요. 출생 시각을 모르면 시주를 계산하지 않습니다.</div>
 </section>
 
 <section class="panel"><h2>사주 원국</h2><div id="chartReport" class="report sub">출생 정보를 입력하고 계산해 주세요.</div></section>
@@ -93,9 +93,9 @@ button,input,select{min-height:44px}
 <div class="field hidden" id="partnerLeapField"><label for="partnerLeap">윤달 여부</label><select id="partnerLeap"><option value="false">평달</option><option value="true">윤달</option></select></div>
 <div class="field"><label for="partnerGender">성별</label><select id="partnerGender"><option value="female">여성</option><option value="male">남성</option></select></div>
 <div class="field"><label for="partnerTimeMode">출생 시간</label><select id="partnerTimeMode"><option value="known">시간 알고 있음</option><option value="unknown">시간 모름</option></select></div>
-<div class="field" id="partnerHourField"><label for="partnerTime">출생 시각 (24시간제)</label><input id="partnerTime" type="time" step="60" value="12:00"></div>
+<div class="field" id="partnerHourField"><label for="partnerTime">출생 시각 (24시간제·KST)</label><input id="partnerTime" type="time" step="60" value="12:00"></div>
 <div class="field"><label><input id="partnerTrueSolarEnabled" type="checkbox" style="width:auto;margin-right:6px">진태양시 보정 사용</label><span class="sub">출생지 경도와 균시차를 반영합니다.</span></div>
-<div class="field hidden" id="partnerLongitudeField"><label for="partnerLongitude">출생지 경도 (동경 °)</label><input id="partnerLongitude" type="number" min="90" max="150" step="0.001" placeholder="예: 서울 126.978"></div>
+<div class="field hidden" id="partnerLongitudeField"><label for="partnerLongitude">출생지 경도 (° 동경 + / 서경 -)</label><input id="partnerLongitude" type="number" min="-180" max="180" step="0.001" placeholder="예: 서울 126.978"></div>
 <div class="field"><label for="partnerBoundary">자시 일주 기준</label><select id="partnerBoundary"><option value="midnight">자정 기준</option><option value="jasi">자시 기준</option><option value="splitJasi">야자시 분리</option></select></div>
 </div>
 <button id="compatibilityButton">궁합 분석하기</button><div id="compatibilityReport" class="report sub">본인 사주를 먼저 계산한 뒤 상대방 정보를 입력해 주세요.</div>
@@ -356,7 +356,7 @@ function buildInput(prefix=""){
  const timeValue=get("birthTime","partnerTime").value||"12:00",[hourText,minuteText]=timeValue.split(":");
  const hour=unknown?12:Number(hourText),minute=unknown?0:Number(minuteText),dayBoundary=unknown?"midnight":get("dayBoundary","partnerBoundary").value;
  const solarEnabled=get("trueSolarEnabled","partnerTrueSolarEnabled").checked&&!unknown,longitude=Number(get("birthLongitude","partnerLongitude").value);
- if(solarEnabled&&(!Number.isFinite(longitude)||longitude<90||longitude>150))throw Error("진태양시 보정을 사용하려면 출생지 경도를 동경 90~150도 범위로 입력해 주세요.");
+ if(solarEnabled&&(!Number.isFinite(longitude)||longitude<90||longitude>150))throw Error("진태양시 보정을 사용하려면 출생지 경도를 -180~180도 범위로 입력해 주세요.");
  return {year,month,day,hour,minute,isLunar:get("calendarType","partnerCalendar").value==="lunar",isLeapMonth:get("leapMonth","partnerLeap").value==="true",gender:get("gender","partnerGender").value,dayBoundary,...(solarEnabled?{trueSolarTime:{longitude,applyEquationOfTime:true,applyHistoricalDst:true}}:{}),unknown};
 }
 async function loadEngine(){if(engine)return engine;const mod=await import("https://esm.sh/manseryeok@2.0.0");if(typeof mod.calculateFourPillars!=="function")throw Error("만세력 엔진에서 계산 함수를 찾지 못했습니다.");engine=mod.calculateFourPillars;return engine;}
