@@ -53,10 +53,9 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <div class="field hidden" id="leapField"><label for="leapMonth">윤달 여부</label><select id="leapMonth"><option value="false">평달</option><option value="true">윤달</option></select></div>
 <div class="field"><label for="gender">성별</label><select id="gender"><option value="male">남성</option><option value="female">여성</option></select></div>
 <div class="field"><label for="timeMode">출생 시간</label><select id="timeMode"><option value="known">시간 알고 있음</option><option value="unknown">시간 모름</option></select></div>
-<div class="field" id="hourField"><label for="birthHour">12지시</label><select id="birthHour">
-<option value="23">자시 (23:00~00:59)</option><option value="1">축시 (01:00~02:59)</option><option value="3">인시 (03:00~04:59)</option><option value="5">묘시 (05:00~06:59)</option><option value="7">진시 (07:00~08:59)</option><option value="9">사시 (09:00~10:59)</option><option value="11">오시 (11:00~12:59)</option><option value="13">미시 (13:00~14:59)</option><option value="15">신시 (15:00~16:59)</option><option value="17">유시 (17:00~18:59)</option><option value="19">술시 (19:00~20:59)</option><option value="21">해시 (21:00~22:59)</option>
-</select></div>
-<div class="field" id="minuteField"><label for="birthMinute">분</label><select id="birthMinute"><option value="0">00분</option><option value="30">30분</option></select></div>
+<div class="field" id="hourField"><label for="birthTime">출생 시각 (24시간제)</label><input id="birthTime" type="time" step="60" value="12:00"></div>
+<div class="field"><label><input id="trueSolarEnabled" type="checkbox" style="width:auto;margin-right:6px">진태양시 보정 사용</label><span class="sub">출생지 경도와 균시차를 반영합니다.</span></div>
+<div class="field hidden" id="longitudeField"><label for="birthLongitude">출생지 경도 (동경 °)</label><input id="birthLongitude" type="number" min="90" max="150" step="0.001" placeholder="예: 서울 126.978"></div>
 <div class="field"><label for="dayBoundary">자시 일주 기준</label><select id="dayBoundary"><option value="midnight">자정 기준</option><option value="jasi">자시 기준</option><option value="splitJasi">야자시 분리</option></select></div>
 </div>
 <button id="calculateButton">내 사주 계산하기</button>
@@ -91,16 +90,16 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <div class="field hidden" id="partnerLeapField"><label for="partnerLeap">윤달 여부</label><select id="partnerLeap"><option value="false">평달</option><option value="true">윤달</option></select></div>
 <div class="field"><label for="partnerGender">성별</label><select id="partnerGender"><option value="female">여성</option><option value="male">남성</option></select></div>
 <div class="field"><label for="partnerTimeMode">출생 시간</label><select id="partnerTimeMode"><option value="known">시간 알고 있음</option><option value="unknown">시간 모름</option></select></div>
-<div class="field" id="partnerHourField"><label for="partnerHour">12지시</label><select id="partnerHour">
-<option value="23">자시</option><option value="1">축시</option><option value="3">인시</option><option value="5">묘시</option><option value="7">진시</option><option value="9">사시</option><option value="11">오시</option><option value="13">미시</option><option value="15">신시</option><option value="17">유시</option><option value="19">술시</option><option value="21">해시</option>
-</select></div>
-<div class="field" id="partnerMinuteField"><label for="partnerMinute">분</label><select id="partnerMinute"><option value="0">00분</option><option value="30">30분</option></select></div>
+<div class="field" id="partnerHourField"><label for="partnerTime">출생 시각 (24시간제)</label><input id="partnerTime" type="time" step="60" value="12:00"></div>
+<div class="field"><label><input id="partnerTrueSolarEnabled" type="checkbox" style="width:auto;margin-right:6px">진태양시 보정 사용</label><span class="sub">출생지 경도와 균시차를 반영합니다.</span></div>
+<div class="field hidden" id="partnerLongitudeField"><label for="partnerLongitude">출생지 경도 (동경 °)</label><input id="partnerLongitude" type="number" min="90" max="150" step="0.001" placeholder="예: 서울 126.978"></div>
 <div class="field"><label for="partnerBoundary">자시 일주 기준</label><select id="partnerBoundary"><option value="midnight">자정 기준</option><option value="jasi">자시 기준</option><option value="splitJasi">야자시 분리</option></select></div>
 </div>
 <button id="compatibilityButton">궁합 분석하기</button><div id="compatibilityReport" class="report sub">본인 사주를 먼저 계산한 뒤 상대방 정보를 입력해 주세요.</div>
 </section>
 
 
+<section class="panel"><h2>상대방 개인 사주 리포트</h2><p class="sub">상대방의 원국·강약·격국·조후·용신 후보·대운을 본인과 분리해 독립적으로 풀이합니다.</p><div id="partnerPersonalReport" class="report sub">상대방 사주 계산 후 표시됩니다.</div></section>
 <section class="panel"><h2>궁합 종합 리포트</h2><p class="sub">두 사람의 원국을 각각 살핀 뒤 일간·배우자궁·오행·합충 관계를 종합합니다.</p><button id="compatReportButton" class="secondary">궁합 리포트 만들기</button><div id="compatFullReport" class="report"></div></section>
 </div>
 
@@ -348,24 +347,14 @@ function finalizeYongshin(obj){
 function escapeHTML(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function show(id,html){$(id).innerHTML=html;}
 function buildInput(prefix=""){
- const partner=prefix==="partner";
- const get=(main,other)=>$(partner?other:main);
- const date=get("birthDate","partnerDate").value;
+ const partner=prefix==="partner",get=(main,other)=>$(partner?other:main),date=get("birthDate","partnerDate").value;
  if(!date)throw Error("생년월일을 입력해 주세요.");
- const [year,month,day]=date.split("-").map(Number);
- const unknown=get("timeMode","partnerTimeMode").value==="unknown";
- const hourValue=get("birthHour","partnerHour").value;
- if(!unknown&&!hourValue)throw Error("출생 시진을 선택해 주세요.");
- return {
-  year,month,day,
-  hour:unknown?12:Number(hourValue),
-  minute:unknown?0:Number(get("birthMinute","partnerMinute").value||0),
-  isLunar:get("calendarType","partnerCalendar").value==="lunar",
-  isLeapMonth:get("leapMonth","partnerLeap").value==="true",
-  gender:get("gender","partnerGender").value,
-  dayBoundary:get("dayBoundary","partnerBoundary").value,
-  unknown
- };
+ const [year,month,day]=date.split("-").map(Number),unknown=get("timeMode","partnerTimeMode").value==="unknown";
+ const timeValue=get("birthTime","partnerTime").value||"12:00",[hourText,minuteText]=timeValue.split(":");
+ const hour=unknown?12:Number(hourText),minute=unknown?0:Number(minuteText);
+ const solarEnabled=get("trueSolarEnabled","partnerTrueSolarEnabled").checked&&!unknown,longitude=Number(get("birthLongitude","partnerLongitude").value);
+ if(solarEnabled&&(!Number.isFinite(longitude)||longitude<90||longitude>150))throw Error("진태양시 보정을 사용하려면 출생지 경도를 동경 90~150도 범위로 입력해 주세요.");
+ return {year,month,day,hour,minute,isLunar:get("calendarType","partnerCalendar").value==="lunar",isLeapMonth:get("leapMonth","partnerLeap").value==="true",gender:get("gender","partnerGender").value,dayBoundary:get("dayBoundary","partnerBoundary").value,...(solarEnabled?{trueSolarTime:{longitude,applyEquationOfTime:true,applyHistoricalDst:true}}:{}),unknown};
 }
 async function loadEngine(){if(engine)return engine;const mod=await import("https://esm.sh/manseryeok@2.0.0");if(typeof mod.calculateFourPillars!=="function")throw Error("만세력 엔진에서 계산 함수를 찾지 못했습니다.");engine=mod.calculateFourPillars;return engine;}
 function renderChart(obj,unknown){const rows=[["년주",obj.year],["월주",obj.month],["일주",obj.day],["시주",unknown?"출생 시간 미상":obj.hour||"미상"]];show("chartReport",`<div class="cards">${rows.map(([n,v])=>`<div class="mini"><b>${n}</b><strong>${escapeHTML(v||"미상")}</strong></div>`).join("")}</div>`);}
@@ -422,7 +411,17 @@ function handleSavedChartAction(event){
  if(event.target.closest("[data-compat-saved]")){applyBirthData(entry.data,"partner");$("compatTab").click();$("compatibilityReport").innerHTML='<p class="ok">‘'+escapeHTML(entry.name)+'’의 출생 정보를 궁합 상대방으로 적용했습니다. 본인 사주를 먼저 계산한 뒤 궁합 분석하기를 눌러 주세요.</p>';return;}
  if(event.target.closest("[data-delete-saved]")){if(!confirm("‘"+entry.name+"’의 저장 정보를 삭제할까요?"))return;writeSavedCharts(readSavedCharts().filter(x=>x.id!==entry.id));renderSavedCharts();}
 }
-async function calculateMain(){const btn=$("calculateButton");btn.disabled=true;$("status").textContent="만세력 계산 중…";try{const calc=await loadEngine(),input=buildInput();const result=calc({...input});const obj={...result.toObject(),__unknownTime:input.unknown};natalResult=result;natalObj=obj;renderChart(obj,input.unknown);renderBasic(obj);renderLuck(result);$("status").innerHTML='<span class="ok">계산이 완료되었습니다.</span>';}catch(e){$("status").innerHTML=`<span class="error">${escapeHTML(e.message||e)}</span>`;}finally{btn.disabled=false;}}
+async function calculateMain(){
+ const btn=$("calculateButton");btn.disabled=true;$("status").textContent="만세력 계산 중…";
+ natalResult=null;natalObj=null;partnerResult=null;partnerObj=null;
+ show("compatibilityReport","본인 사주를 다시 계산했습니다. 상대방 정보를 다시 계산해 주세요.");show("compatFullReport","");show("partnerPersonalReport","상대방 사주 계산 후 표시됩니다.");
+ try{const calc=await loadEngine(),input=buildInput(),result=calc({...input}),obj={...result.toObject(),__unknownTime:input.unknown,__luckTimingApprox:input.unknown,__trueSolarTime:!!input.trueSolarTime};
+ natalResult=result;natalObj=obj;renderChart(obj,input.unknown);renderBasic(obj);renderLuck(result);
+ $("status").innerHTML='<span class="ok">계산이 완료되었습니다.</span>'+(input.unknown?' <span class="sub">출생 시각 미상: 시주는 제외했으며 대운 시작 시점은 정오 임시값을 사용한 추정입니다.</span>':'');
+ }catch(e){show("chartReport","계산 결과가 없습니다. 입력값과 만세력 연결을 확인해 주세요.");show("strengthReport","");show("structureReport","");show("climateReport","");show("usefulReport","");show("luckReport","");$("status").innerHTML=`<span class="error">${escapeHTML(e.message||e)}</span>`;}
+ finally{btn.disabled=false;}
+}
+
 const STEM_COMB=[["갑","기"],["을","경"],["병","신"],["정","임"],["무","계"]],STEM_CLASH=[["갑","경"],["을","신"],["병","임"],["정","계"]];
 const PAIRS={육합:[["자","축"],["인","해"],["묘","술"],["진","유"],["사","신"],["오","미"]],충:[["자","오"],["축","미"],["인","신"],["묘","유"],["진","술"],["사","해"]],해:[["자","미"],["축","오"],["인","사"],["묘","진"],["신","해"],["유","술"]],파:[["자","유"],["축","진"],["인","해"],["묘","오"],["사","신"],["미","술"]],형:[["인","사"],["사","신"],["신","인"],["축","술"],["술","미"],["미","축"],["자","묘"],["묘","자"]],원진:[["자","미"],["축","오"],["인","유"],["묘","신"],["진","해"],["사","술"]]};
 const TRIADS=[["신","자","진"],["해","묘","미"],["인","오","술"],["사","유","축"]];
