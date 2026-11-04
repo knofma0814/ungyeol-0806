@@ -31,6 +31,9 @@ table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0}th,td{padd
 .hidden{display:none}.error{color:#f0a39b}
 .tabbar{display:flex;gap:8px;margin:18px 0;position:sticky;top:0;z-index:5;background:#0b1713;padding:8px;border:1px solid var(--line);border-radius:13px}.tabbar button{flex:1;margin:0;background:#1b3027;color:var(--muted);border:1px solid var(--line);padding:11px 8px}.tabbar button.active{background:linear-gradient(135deg,#d9bd82,#a98b55);color:#17231c;border-color:var(--gold)}.pane{display:none}.pane.active{display:block}.explain{padding:12px 14px;margin:10px 0;background:#0d1b15;border:1px solid var(--line);border-radius:9px}.explain b{color:var(--gold)}.report h3{margin-top:22px}.report .lead{font-size:15px;color:var(--ink);font-weight:600}.report .basis{color:var(--muted);font-size:13px}.ok{color:#a8d2a8}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:9px}.mini{background:#0e1d16;border:1px solid var(--line);border-radius:10px;padding:12px}.mini b{display:block;color:var(--gold);font-size:12px}.mini strong{font-size:20px}
 hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+table{display:block;max-width:100%;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+button,input,select{min-height:44px}
+@media(max-width:520px){.panel{padding:15px;margin:10px 0}.tabbar{gap:4px;padding:5px}.tabbar button{font-size:12px;padding:9px 4px}.grid{grid-template-columns:minmax(0,1fr)}}
 @media(min-width:650px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}main{padding-left:20px;padding-right:20px}}
 
 /* 운결 AI 운명술사 상담 */
@@ -53,10 +56,9 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <div class="field hidden" id="leapField"><label for="leapMonth">윤달 여부</label><select id="leapMonth"><option value="false">평달</option><option value="true">윤달</option></select></div>
 <div class="field"><label for="gender">성별</label><select id="gender"><option value="male">남성</option><option value="female">여성</option></select></div>
 <div class="field"><label for="timeMode">출생 시간</label><select id="timeMode"><option value="known">시간 알고 있음</option><option value="unknown">시간 모름</option></select></div>
-<div class="field" id="hourField"><label for="birthHour">12지시</label><select id="birthHour">
-<option value="23">자시 (23:00~00:59)</option><option value="1">축시 (01:00~02:59)</option><option value="3">인시 (03:00~04:59)</option><option value="5">묘시 (05:00~06:59)</option><option value="7">진시 (07:00~08:59)</option><option value="9">사시 (09:00~10:59)</option><option value="11">오시 (11:00~12:59)</option><option value="13">미시 (13:00~14:59)</option><option value="15">신시 (15:00~16:59)</option><option value="17">유시 (17:00~18:59)</option><option value="19">술시 (19:00~20:59)</option><option value="21">해시 (21:00~22:59)</option>
-</select></div>
-<div class="field" id="minuteField"><label for="birthMinute">분</label><select id="birthMinute"><option value="0">00분</option><option value="30">30분</option></select></div>
+<div class="field" id="hourField"><label for="birthTime">출생 시각 (24시간제·KST)</label><input id="birthTime" type="time" min="00:00" max="23:59" step="60" value="12:00"><span class="sub">12지시: 자 23:00~00:59 · 축 01:00~02:59 · 인 03:00~04:59 · 묘 05:00~06:59 · 진 07:00~08:59 · 사 09:00~10:59 · 오 11:00~12:59 · 미 13:00~14:59 · 신 15:00~16:59 · 유 17:00~18:59 · 술 19:00~20:59 · 해 21:00~22:59</span></div>
+<div class="field"><label><input id="trueSolarEnabled" type="checkbox" style="width:auto;margin-right:6px">진태양시 보정 사용</label><span class="sub">출생지 경도와 균시차를 반영합니다.</span></div>
+<div class="field hidden" id="longitudeField"><label for="birthLongitude">출생지 경도 (° 동경 + / 서경 -)</label><input id="birthLongitude" type="number" min="-180" max="180" step="0.001" placeholder="예: 서울 126.978"></div>
 <div class="field"><label for="dayBoundary">자시 일주 기준</label><select id="dayBoundary"><option value="midnight">자정 기준</option><option value="jasi">자시 기준</option><option value="splitJasi">야자시 분리</option></select></div>
 </div>
 <button id="calculateButton">내 사주 계산하기</button>
@@ -64,7 +66,7 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <div class="sub" style="margin-top:8px">저장한 사주는 이 기기의 브라우저에 보관됩니다.</div>
 
 <div id="status" class="sub" aria-live="polite"></div>
-<div class="notice">만세력 엔진을 온라인으로 불러옵니다. 최초 실행 시 인터넷 연결이 필요합니다. 출생 시각을 모르면 시주를 계산하지 않고 표시합니다.</div>
+<div class="notice">만세력 엔진을 온라인으로 불러옵니다. 출생 시각은 한국 표준시(KST) 기준으로 입력하세요. 해외 출생은 현지 시각을 KST로 변환한 뒤 입력하고, 진태양시 보정에는 실제 출생지 경도를 사용하세요. 출생 시각을 모르면 시주를 계산하지 않습니다.</div>
 </section>
 
 <section class="panel"><h2>사주 원국</h2><div id="chartReport" class="report sub">출생 정보를 입력하고 계산해 주세요.</div></section>
@@ -91,16 +93,16 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 <div class="field hidden" id="partnerLeapField"><label for="partnerLeap">윤달 여부</label><select id="partnerLeap"><option value="false">평달</option><option value="true">윤달</option></select></div>
 <div class="field"><label for="partnerGender">성별</label><select id="partnerGender"><option value="female">여성</option><option value="male">남성</option></select></div>
 <div class="field"><label for="partnerTimeMode">출생 시간</label><select id="partnerTimeMode"><option value="known">시간 알고 있음</option><option value="unknown">시간 모름</option></select></div>
-<div class="field" id="partnerHourField"><label for="partnerHour">12지시</label><select id="partnerHour">
-<option value="23">자시</option><option value="1">축시</option><option value="3">인시</option><option value="5">묘시</option><option value="7">진시</option><option value="9">사시</option><option value="11">오시</option><option value="13">미시</option><option value="15">신시</option><option value="17">유시</option><option value="19">술시</option><option value="21">해시</option>
-</select></div>
-<div class="field" id="partnerMinuteField"><label for="partnerMinute">분</label><select id="partnerMinute"><option value="0">00분</option><option value="30">30분</option></select></div>
+<div class="field" id="partnerHourField"><label for="partnerTime">출생 시각 (24시간제·KST)</label><input id="partnerTime" type="time" min="00:00" max="23:59" step="60" value="12:00"><span class="sub">12지시: 자 23:00~00:59 · 축 01:00~02:59 · 인 03:00~04:59 · 묘 05:00~06:59 · 진 07:00~08:59 · 사 09:00~10:59 · 오 11:00~12:59 · 미 13:00~14:59 · 신 15:00~16:59 · 유 17:00~18:59 · 술 19:00~20:59 · 해 21:00~22:59</span></div>
+<div class="field"><label><input id="partnerTrueSolarEnabled" type="checkbox" style="width:auto;margin-right:6px">진태양시 보정 사용</label><span class="sub">출생지 경도와 균시차를 반영합니다.</span></div>
+<div class="field hidden" id="partnerLongitudeField"><label for="partnerLongitude">출생지 경도 (° 동경 + / 서경 -)</label><input id="partnerLongitude" type="number" min="-180" max="180" step="0.001" placeholder="예: 서울 126.978"></div>
 <div class="field"><label for="partnerBoundary">자시 일주 기준</label><select id="partnerBoundary"><option value="midnight">자정 기준</option><option value="jasi">자시 기준</option><option value="splitJasi">야자시 분리</option></select></div>
 </div>
 <button id="compatibilityButton">궁합 분석하기</button><div id="compatibilityReport" class="report sub">본인 사주를 먼저 계산한 뒤 상대방 정보를 입력해 주세요.</div>
 </section>
 
 
+<section class="panel"><h2>상대방 개인 사주 리포트</h2><p class="sub">상대방의 원국·강약·격국·조후·용신 후보·대운을 본인과 분리해 독립적으로 풀이합니다.</p><div id="partnerPersonalReport" class="report sub">상대방 사주 계산 후 표시됩니다.</div></section>
 <section class="panel"><h2>궁합 종합 리포트</h2><p class="sub">두 사람의 원국을 각각 살핀 뒤 일간·배우자궁·오행·합충 관계를 종합합니다.</p><button id="compatReportButton" class="secondary">궁합 리포트 만들기</button><div id="compatFullReport" class="report"></div></section>
 </div>
 
@@ -121,7 +123,7 @@ hr{border:0;border-top:1px solid var(--line);margin:18px 0}
 </main>
 <script type="module">
 const $ = id => document.getElementById(id);
-let engine = null, natalResult = null, natalObj = null, partnerResult = null, partnerObj = null;
+let engine = null, engineModule = null, natalResult = null, natalObj = null, partnerResult = null, partnerObj = null;
 const STEM_ELEMENT = {갑:"목",을:"목",병:"화",정:"화",무:"토",기:"토",경:"금",신:"금",임:"수",계:"수"};
 const HIDDEN = {자:[["계",1]],축:[["기",.6],["계",.25],["신",.15]],인:[["갑",.6],["병",.25],["무",.15]],묘:[["을",1]],진:[["무",.6],["을",.25],["계",.15]],사:[["병",.6],["무",.25],["경",.15]],오:[["정",.7],["기",.3]],미:[["기",.6],["정",.25],["을",.15]],신:[["경",.6],["임",.25],["무",.15]],유:[["신",1]],술:[["무",.6],["신",.25],["정",.15]],해:[["임",.7],["갑",.3]]};
 const GENERATES={목:"화",화:"토",토:"금",금:"수",수:"목"}, CONTROLS={목:"토",토:"수",수:"화",화:"금",금:"목"};
@@ -297,12 +299,16 @@ function analyzePattern(obj){
   exposedHidden:candidates.filter(x=>x.exposed),exposedPriority,patternType,establishment,breakFactors,statusDetail,
   note:"격국 후보는 월령 본기·중기·여기의 십성과 투출을 구분해 제시합니다. 파격 단서는 월지의 형충파해 및 투출 우선순위로 표시하지만, 실제 성격은 구응·제화·회국·합화·격국별 성패 기준과 학파 차이를 함께 검토해야 하므로 자동 확정하지 않습니다."};
 }
+function tenGodGroup(god){
+ const groups={"비견":"비겁","겁재":"비겁","정인":"인성","편인":"인성","식신":"식상","상관":"식상","정재":"재성","편재":"재성","정관":"관성","편관(칠살)":"관성"};
+ return groups[god]||god;
+}
 function analyzeUseful(obj){
  const base=analyzeStrength(obj);if(base.error)return base;
  const climate=analyzeClimate(obj),structure=analyzeStructure(obj),pattern=analyzePattern(obj);
  const day=base.day,ratio=base.ratio;
  const supportSide=ratio>=.58?"신강 쪽":ratio<=.42?"신약 쪽":"중화 범위";
- const elementForGod=(god)=>Object.keys(base.c).find(e=>elementRelation(day,e)===god)||"";
+ const elementForGod=(god)=>Object.keys(base.c).find(e=>elementRelation(day,e)===tenGodGroup(god))||"";
  const suppression=ratio>=.58?["식상","재성","관성"].map(elementForGod).filter(Boolean):ratio<=.42?["인성","비겁"].map(elementForGod).filter(Boolean):[];
  const avoid=ratio>=.58?["인성","비겁"].map(elementForGod).filter(Boolean):ratio<=.42?["식상","재성","관성"].map(elementForGod).filter(Boolean):[];
  const climateCandidates=climate.cand.map(element=>({element,reason:element==="화"?[climate.temp<=-.8?"한랭 완화":null,climate.moist>=.5?"습윤 완화":null].filter(Boolean).join("·"):[climate.temp>=.8?"열기 완화":null,climate.moist<=-.5?"건조 완화":null].filter(Boolean).join("·")}));
@@ -322,7 +328,7 @@ function finalizeYongshin(obj){
  const u=analyzeUseful(obj);if(u.error)return u;
  const scores={목:0,화:0,토:0,금:0,수:0},reasons={목:[],화:[],토:[],금:[],수:[]};
  const add=(el,points,why)=>{if(scores[el]!==undefined){scores[el]+=points;reasons[el].push(why);}};
- const day=u.day,elForGod=god=>Object.keys(scores).find(e=>elementRelation(day,e)===god)||"";
+ const day=u.day,elForGod=god=>Object.keys(scores).find(e=>elementRelation(day,e)===tenGodGroup(god))||"";
  // 1) 격국: 월령 본기와 투출을 우선하되, 자동 성격 판정이 아닌 구조적 가점으로만 반영
  const main=u.pattern.main,patternElement=main?.god?elForGod(main.god):"";
  if(patternElement)add(patternElement,main.exposed?2.2:1.2,"월령 본기 십성의 구조적 우선성("+(main.exposed?"투출":"미투출")+")");
@@ -335,40 +341,50 @@ function finalizeYongshin(obj){
  if(u.climate.temp>=1.5||u.climate.moist<=-1.0)add("수",2.4,"조열을 식히고 적시는 조후 필요");
  // 4) 통관: 실제 상극 양쪽이 함께 강하고 매개 오행이 있을 때 보조 가점
  for(const b of u.bridge)if(b.present)add(b.element,1.0,"실제 상극 구조의 통관 가능성");
- // 동점이면 월령 본기, 조후, 억부 순으로 안정적으로 선택
+ // 동점이면 월령 본기, 조후, 억부, 통관 순으로 검토 우선순위를 적용
  const order=["목","화","토","금","수"];
- const ranked=order.map(element=>({element,score:+scores[element].toFixed(2),reasons:reasons[element]})).sort((a,b)=>b.score-a.score||order.indexOf(a.element)-order.indexOf(b.element));
+ const tiePriority=element=>{
+  const why=reasons[element];
+  if(why.some(x=>x.startsWith("월령 본기")))return 0;
+  if(why.some(x=>x.startsWith("한습")||x.startsWith("조열")))return 1;
+  if(why.some(x=>x.includes("억부")))return 2;
+  if(why.some(x=>x.includes("통관")))return 3;
+  return 4;
+ };
+ const ranked=order.map(element=>({element,score:+scores[element].toFixed(2),reasons:reasons[element]}))
+  .sort((a,b)=>b.score-a.score||tiePriority(a.element)-tiePriority(b.element)||order.indexOf(a.element)-order.indexOf(b.element));
  const best=ranked[0],second=ranked[1],margin=best.score-second.score;
- const confidence=best.score>=4&&margin>=1.5?"비교적 뚜렷":best.score>=2.2&&margin>=.6?"중간":"잠정";
- return {...u,finalYongshin:best.element,finalScore:best.score,confidence,ranked,reasons:best.reasons,
-  favorable:[best.element,...ranked.slice(1).filter(x=>x.score>=best.score-1.2).map(x=>x.element)],
-  unfavorable:ranked.filter(x=>x.score<=best.score-2).map(x=>x.element),
-  finalNote:"최종 용신은 자평진전의 월령·격국 구조를 먼저 살피고, 적천수 계열의 억부와 궁통보감의 조후를 교차 검증한 운결의 통합 판정입니다. 세 고전의 단일 합의나 학계의 객관적 정답을 뜻하지 않으며, 현재 강약·기후 수치는 근사 지표이므로 격국 성패와 합화·회국을 정밀하게 확정하지 못한 경우 잠정 판정으로 표시합니다."};
+ const hasEvidence=best.score>0;
+ const confidence=!hasEvidence?"자료 부족":best.score>=4&&margin>=1.5?"비교적 뚜렷":best.score>=2.2&&margin>=.6?"중간":"잠정";
+ return {...u,finalYongshin:hasEvidence?best.element:"판정 보류",finalScore:best.score,confidence,ranked,reasons:best.reasons,
+  favorable:hasEvidence?[best.element,...ranked.slice(1).filter(x=>x.score>0&&x.score>=best.score-1.2).map(x=>x.element)]:[],
+  unfavorable:hasEvidence?ranked.filter(x=>x.score>0&&x.score<=best.score-2).map(x=>x.element):[],
+  finalNote:hasEvidence?"운결은 월령·격국 구조를 먼저 살피고, 억부와 조후를 교차 검토한 뒤 통관 가능성을 보조 반영합니다. 이는 전통 명리의 단일 합의나 학계의 객관적 정답이 아니며, 현재 강약·기후 수치는 근사 지표이므로 격국 성패와 합화·회국을 정밀하게 확정하지 못한 경우 잠정 판정으로 표시합니다.":"현재 구현된 격국·억부·조후·통관 기준에서 뚜렷한 점수 근거가 없어 용신 후보를 임의로 고르지 않고 판정을 보류합니다. 월령의 왕쇠, 통근, 투출, 합충 및 대운을 별도로 검토해야 합니다."};
 }
 function escapeHTML(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function show(id,html){$(id).innerHTML=html;}
 function buildInput(prefix=""){
- const partner=prefix==="partner";
- const get=(main,other)=>$(partner?other:main);
- const date=get("birthDate","partnerDate").value;
+ const partner=prefix==="partner",get=(main,other)=>$(partner?other:main),date=get("birthDate","partnerDate").value;
  if(!date)throw Error("생년월일을 입력해 주세요.");
- const [year,month,day]=date.split("-").map(Number);
- const unknown=get("timeMode","partnerTimeMode").value==="unknown";
- const hourValue=get("birthHour","partnerHour").value;
- if(!unknown&&!hourValue)throw Error("출생 시진을 선택해 주세요.");
- return {
-  year,month,day,
-  hour:unknown?12:Number(hourValue),
-  minute:unknown?0:Number(get("birthMinute","partnerMinute").value||0),
-  isLunar:get("calendarType","partnerCalendar").value==="lunar",
-  isLeapMonth:get("leapMonth","partnerLeap").value==="true",
-  gender:get("gender","partnerGender").value,
-  dayBoundary:get("dayBoundary","partnerBoundary").value,
-  unknown
- };
+ const [year,month,day]=date.split("-").map(Number),unknown=get("timeMode","partnerTimeMode").value==="unknown";
+ const timeValue=get("birthTime","partnerTime").value;if(!unknown&&!timeValue)throw Error("출생 시각을 입력하거나 ‘시간 모름’을 선택해 주세요.");const [hourText,minuteText]=(timeValue||"12:00").split(":");
+ const hour=unknown?12:Number(hourText),minute=unknown?0:Number(minuteText),dayBoundary=unknown?"midnight":get("dayBoundary","partnerBoundary").value;
+ const solarEnabled=get("trueSolarEnabled","partnerTrueSolarEnabled").checked&&!unknown,longitudeText=get("birthLongitude","partnerLongitude").value.trim(),longitude=Number(longitudeText);
+ if(solarEnabled&&(!longitudeText||!Number.isFinite(longitude)||longitude< -180||longitude>180))throw Error("진태양시 보정을 사용하려면 출생지 경도를 -180~180도 범위로 입력해 주세요.");
+ return {year,month,day,hour,minute,isLunar:get("calendarType","partnerCalendar").value==="lunar",isLeapMonth:get("leapMonth","partnerLeap").value==="true",gender:get("gender","partnerGender").value,dayBoundary,...(solarEnabled?{trueSolarTime:{longitude,applyEquationOfTime:true,applyHistoricalDst:true}}:{}),unknown};
 }
-async function loadEngine(){if(engine)return engine;const mod=await import("https://esm.sh/manseryeok@2.0.0");if(typeof mod.calculateFourPillars!=="function")throw Error("만세력 엔진에서 계산 함수를 찾지 못했습니다.");engine=mod.calculateFourPillars;return engine;}
-function renderChart(obj,unknown){const rows=[["년주",obj.year],["월주",obj.month],["일주",obj.day],["시주",unknown?"출생 시간 미상":obj.hour||"미상"]];show("chartReport",`<div class="cards">${rows.map(([n,v])=>`<div class="mini"><b>${n}</b><strong>${escapeHTML(v||"미상")}</strong></div>`).join("")}</div>`);}
+async function loadEngine(){if(engine)return engine;const mod=await import("https://esm.sh/manseryeok@2.0.0");if(typeof mod.calculateFourPillars!=="function")throw Error("만세력 엔진에서 계산 함수를 찾지 못했습니다.");engineModule=mod;engine=mod.calculateFourPillars;return engine;}
+function solarBirthDate(input){
+ if(!input)return null;
+ let d={year:input.year,month:input.month,day:input.day};
+ if(input.isLunar){
+  if(typeof engineModule?.lunarToSolar!=="function")return null;
+  d=engineModule.lunarToSolar(input.year,input.month,input.day,input.isLeapMonth);
+ }
+ if(!d||![d.year,d.month,d.day].every(Number.isFinite))return null;
+ return String(d.year).padStart(4,"0")+"-"+String(d.month).padStart(2,"0")+"-"+String(d.day).padStart(2,"0");
+}
+function renderChart(obj,unknown){const rows=[["년주",obj.year],["월주",obj.month],["일주",obj.day],["시주",unknown?"출생 시간 미상":obj.hour||"미상"]];show("chartReport",`<div class="cards">${rows.map(([n,v])=>`<div class="mini"><b>${n}</b><strong>${escapeHTML(v||"미상")}</strong></div>`).join("")}</div><p class="muted">시간 기준: ${unknown?"출생 시각 미상 · 시주 제외":obj.__trueSolarTime?"진태양시 보정 적용":"입력한 표준시 기준"} · 일주 경계: ${obj.__dayBoundaryUnknown?"출생 시각 미상 · 당일 일주 임시 기준(자시 경계 미확정)":({midnight:"자정 기준",jasi:"자시 기준",splitJasi:"야자시 분리"})[obj.__dayBoundary]||"자정 기준"}</p>`);}
 function renderBasic(obj){
  const s=analyzeStrength(obj),c=analyzeClimate(obj),u=analyzeUseful(obj),st=analyzeStructure(obj),g=analyzePattern(obj),esc=escapeHTML;
  show("structureReport",st.error?st.error:`<p class="lead">월지 <b>${st.month.branch}</b>의 본기 <b>${st.monthMain}(${st.monthGod})</b>, 십이운성 <b>${g.monthStage}</b>를 격국 판단의 출발점으로 삼습니다.</p><h3>신강·신약 판단 근거</h3><p><b>월령:</b> ${s.monthRelation} 관계 · 월지 지장간의 일간 지원 ${s.monthBranchSupport.toFixed(2)} · 월령 반영 ${s.monthCommand.toFixed(2)}</p><p><b>천간 지원:</b> ${s.stemSupport.filter(x=>x.support).map(x=>x.position+" "+x.stem).join(" · ")||"비겁·인성 투출 없음"} · <b>통근:</b> ${s.rootSupport.map(x=>x.position+" "+x.branch+"의 "+x.stem+"("+x.role+")").join(" · ")||"비겁·인성 통근 없음"}</p><p><b>일지 뿌리:</b> ${s.dayRoot.map(x=>x.stem+"("+x.role+")").join(" · ")||"없음"} · <b>월지 뿌리:</b> ${s.monthRoot.map(x=>x.stem+"("+x.role+")").join(" · ")||"없음"}</p><p><b>지원/소모 참고 비율:</b> ${(s.ratio*100).toFixed(1)}% · ${s.label}</p><details><summary>지장간별 가중치 보기</summary><p>${s.qiDetail.map(x=>x.position+" "+x.branch+" "+x.stem+"("+x.role+") "+x.weighted.toFixed(2)).join(" · ")}</p></details><p class="muted">${s.scoreNote}</p><h3>격국 후보와 성립 단서</h3><p><b>우선 후보:</b> ${esc(g.candidate)}</p><p><b>월지 지장간 십성:</b> ${g.candidates.map(x=>x.stem+"("+x.role+") · "+x.god+" · 가중치 "+x.weight.toFixed(2)+(x.exposed?" · 투출":" · 미투출")).join(" / ")}</p><p><b>월지 본기 투출:</b> ${g.mainExposed?g.main.exposedAt.join(" · ")+"에서 월지 본기 "+g.main.stem+"이 천간에 투출함":"월지 본기와 같은 지장간 글자가 천간에서 확인되지 않음"}</p><p><b>월지와 다른 원국 지지의 관계:</b> ${g.monthInteractions.join(" · ")||"직접 확인되는 합·충·형·파·해 관계 없음"}</p><h3>합화 조건 검토</h3><p><b>천간합:</b> ${st.transformations.stems.map(x=>x.pair+" → "+x.transformed+"("+x.status+", "+x.passed+"/"+x.total+")").join(" · ")||"해당 없음"}</p><p><b>지지 육합:</b> ${st.transformations.branches.map(x=>x.pair+" → "+x.transformed+"("+x.status+", "+x.passed+"/"+x.total+")").join(" · ")||"해당 없음"}</p><details><summary>합화 판정 근거 보기</summary>${[...st.transformations.stems,...st.transformations.branches].map(x=>"<p><b>"+x.kind+" "+x.pair+" → "+x.transformed+"</b><br>"+x.conditions.map(c=>(c.ok?"충족":"미충족")+" · "+c.name+": "+c.detail).join("<br>")+"</p>").join("")||"<p>검토할 합화 관계가 없습니다.</p>"}</details><p class="muted">${st.transformations.note}</p><h3>원국 내부 천간 관계</h3><p>${st.stemPairs.map(x=>x.a+"-"+x.b+" "+x.kind+"("+x.pair+")").join(" · ")||"천간합·천간충 없음"}</p><h3>원국 내부 지지 관계</h3><p>${st.branchPairs.map(x=>x.a+"-"+x.b+" "+x.kind+"("+x.pair+")").join(" · ")||"두 기둥 사이의 지지 관계 없음"}</p><p><b>삼합·방합의 부분 결집:</b> ${st.assemblies.map(x=>x.name+" "+x.group+" — "+x.level+" (월지 "+(x.monthIn?"포함":"미포함")+", "+(x.clashPairs.length?"충돌 "+x.clashPairs.join("/"):"직접 충 없음")+")").join(" · ")||"두 글자 이상 모인 국 없음"}</p><p><b>완성된 삼합:</b> ${st.natalTriads.map(x=>x.group+" ("+x.detail+")").join(" · ")||"없음"} · <b>완성된 방합:</b> ${st.natalDirections.map(x=>x.group+" ("+x.detail+")").join(" · ")||"없음"}</p><p><b>반합:</b> ${st.natalHalf.map(x=>x.a+"-"+x.b+" ("+x.pair+")").join(" · ")||"없음"}</p><p class="muted">${st.relationNote} 합이 있다고 자동으로 합화되는 것은 아니며, 계절·투출·통근·방해 관계를 별도로 검토합니다.</p><p><b>월간 십성:</b> ${st.monthStemGod}</p><p><b>일간 통근:</b> ${st.rootHits.map(x=>x.position+" "+x.branch+"의 "+x.stem).join(" · ")||"확인되지 않음"} · <b>인성 뿌리:</b> ${st.resourceHits.map(x=>x.position+" "+x.branch+"의 "+x.stem).join(" · ")||"확인되지 않음"}</p><p class="muted">격국 후보는 월지 본기와 투출을 중심으로 표시했습니다. 월령의 왕쇠, 회국·합화, 형충으로 인한 변화와 격국의 성패까지 모두 판정한 것은 아니므로 확정 격국이 아닙니다.</p><h3>천간 십성</h3><table><thead><tr><th>위치</th><th>천간</th><th>십성</th></tr></thead><tbody>${st.visible.map(x=>`<tr><td>${x.name}</td><td>${esc(x.stem||"—")}</td><td>${x.stemGod}</td></tr>`).join("")}</tbody></table><h3>지장간과 십성</h3><table><thead><tr><th>위치·지지</th><th>지장간</th><th>십성</th><th>역할</th></tr></thead><tbody>${st.hidden.map(x=>`<tr><td>${x.position} ${x.branch}</td><td>${x.stem}</td><td>${x.god}</td><td>${x.main?"본기":"중기·여기"}</td></tr>`).join("")}</tbody></table><h3>십성 분포 참고</h3><p>${Object.entries(st.godCounts).filter(([,v])=>v>0).map(([k,v])=>k+" "+v.toFixed(2)).join(" · ")}</p>`);
@@ -377,7 +393,7 @@ function renderBasic(obj){
  show("strengthReport",s.error?s.error:`<p>일간: <b>${s.stem} (${s.day})</b> · 강약 참고: <b>${s.label}</b></p><p>월령 오행: <b>${s.seasonElement}</b> · 계절 보정 생조 세력 ${s.support.toFixed(2)} / 기타 세력 ${s.other.toFixed(2)} · 참고 비율 ${(s.ratio*100).toFixed(1)}%</p><p>원분포: ${Object.entries(s.c).map(([k,v])=>k+" "+v.toFixed(2)).join(" · ")}</p><p>월령 보정계수: ${Object.entries(s.seasonalFactors).map(([k,v])=>k+" "+v.toFixed(1)).join(" · ")}</p><p class="muted">오행의 단순 개수 대신 월령의 왕상휴수사 관계를 참고해 계절 가중치를 적용한 보조 지표입니다. 지장간의 실제 세력, 통근의 깊이, 투출과 합화, 격국의 성패를 모두 계산한 정통 신강신약 판정은 아니며 계수와 경계값은 참고용입니다.</p>`);
  show("climateReport",c.error?c.error:`<p class="lead">${c.season}의 계절 기운을 바탕으로 ${c.t}, ${c.h}의 경향입니다.</p><div class="explain"><b>한난 판단</b><p>${c.tempBasis}</p><p>${c.tempMeaning}</p><p class="basis">보조값 ${c.temp.toFixed(2)}</p></div><div class="explain"><b>조습 판단</b><p>${c.moistBasis}</p><p>${c.moistMeaning}</p><p class="basis">보조값 ${c.moist.toFixed(2)}</p></div>${climateInterpretation(c,u)}<p><b>월지 지장간:</b> ${c.monthQi.map(x=>x.stem+"("+x.role+")").join(" · ")}</p><p><b>화·수 투출:</b> ${c.exposed.join(" · ")||"확인되지 않음"}</p><p><b>화·수 통근:</b> ${c.climateRoots.join(" · ")||"확인되지 않음"}</p><p><b>조후용신 후보:</b> ${u.climateCandidates.map(x=>x.element+" — "+x.reason).join(" / ")||"계절 지표만으로 특정하기 어려움"}</p><p class="muted">조후용신은 계절뿐 아니라 일간과 전체 원국의 균형을 함께 판단합니다.</p>`);
  const final=finalizeYongshin(obj);
- show("usefulReport",u.error?u.error:`<h3>최종 용신 판정</h3><div class="notice"><p><b>운결 통합 판정: ${final.finalYongshin} — ${final.confidence}</b></p><p>격국·월령, 억부, 조후, 통관을 함께 비교해 가장 높은 점수의 오행 하나를 대표 용신으로 표시합니다.</p><p><b>판정 근거:</b> ${final.reasons.join(" · ")||"각 기준의 점수가 비슷해 잠정적으로 선택했습니다."}</p><p><b>차순위:</b> ${final.ranked.slice(1,3).map(x=>x.element+"("+x.score+")").join(" · ")}</p></div><h3>각 용신 체계별 검토</h3><p><b>격국·월령:</b> ${u.pattern.candidate} / 월령 본기 십성 ${u.pattern.main?.god||"자료 없음"} ${u.pattern.main?.exposed?"(투출)":"(미투출)"}</p><p><b>억부용신 후보:</b> ${u.suppression.join(" · ")||"강약이 중화 범위여서 특정 후보를 두지 않음"} — ${u.supportSide}라는 보조 강약 지표에서 추린 후보입니다.</p><p><b>조후용신 후보:</b> ${u.climateCandidates.map(x=>x.element+"("+x.reason+")").join(" · ")||"뚜렷한 조후 후보 없음"}</p><p><b>통관용신 검토:</b> ${u.bridge.map(x=>x.conflict+" → "+x.element+(x.present?"(존재)":"(미약)")).join(" · ")||"뚜렷한 상극 연결 후보 없음"}</p><h3>희신·기신 참고</h3><p><b>보조 희신 후보:</b> ${final.favorable.join(" · ")||"추가 검토 필요"} · <b>주의 오행:</b> ${final.unfavorable.join(" · ")||"뚜렷하게 배제할 오행 없음"}</p><p><b>원국에 없는 오행:</b> ${u.missing.join(" · ")||"없음"} (부족하다는 이유만으로 용신이 되지는 않습니다.)</p><p class="muted">${final.finalNote}</p>`);
+ show("usefulReport",u.error?u.error:`<h3>최종 용신 판정</h3><div class="notice"><p><b>운결 통합 판정: ${final.finalYongshin} — ${final.confidence}</b></p><p>격국·월령, 억부, 조후, 통관을 함께 비교해 가장 높은 점수의 오행 하나를 대표 용신으로 표시합니다.</p><p><b>판정 근거:</b> ${final.reasons.join(" · ")||"각 기준의 점수가 비슷해 잠정적으로 선택했습니다."}</p><p><b>차순위:</b> ${final.ranked.slice(1,3).map(x=>x.element+"("+x.score+")").join(" · ")}</p></div><h3>각 용신 체계별 검토</h3><p><b>격국·월령:</b> ${u.pattern.candidate} / 월령 본기 십성 ${u.pattern.main?.god||"자료 없음"} ${u.pattern.main?.exposed?"(투출)":"(미투출)"}</p><p><b>억부용신 후보:</b> ${u.suppression.join(" · ")||"강약이 중화 범위여서 특정 후보를 두지 않음"} — ${u.supportSide}라는 보조 강약 지표에서 추린 후보입니다.</p><p><b>조후용신 후보:</b> ${u.climateCandidates.map(x=>x.element+"("+x.reason+")").join(" · ")||"뚜렷한 조후 후보 없음"}</p><p><b>통관용신 검토:</b> ${u.bridge.map(x=>x.conflict+" → "+x.element+(x.present?"(존재)":"(미약)")).join(" · ")||"뚜렷한 상극 연결 후보 없음"}</p><h3>희신 후보와 기신 검토</h3><p><b>희신 참고 후보:</b> ${final.favorable.join(" · ")||"추가 검토 필요"} · <b>상대적 주의 후보(기신 확정 아님):</b> ${final.unfavorable.join(" · ")||"뚜렷한 후보 없음"}</p><p><b>원국에 없는 오행:</b> ${u.missing.join(" · ")||"없음"} (부족하다는 이유만으로 용신이 되지는 않습니다.)</p><p class="muted">${final.finalNote}</p>`);
 }
 function renderLuck(result){
  const l=result?.luckPillars;if(!l){show("luckReport","엔진에서 대운 자료를 제공하지 않았습니다.");return;}
@@ -385,20 +401,20 @@ function renderLuck(result){
  const rows=list.map((x,i)=>{const pillar=String(x.korean||x.pillar||""),p=parts(pillar),god=p.stem&&day?tenGod(day,p.stem):"—",stage=p.branch&&day?twelveStage(day,p.branch):"—";
   const branchRelations=natalObj&&p.branch?branchEntries(natalObj,"원국").flatMap(n=>relation(n.branch,p.branch).map(kind=>n.position+" "+n.branch+"-"+p.branch+" "+kind)):[];
   return `<tr><td>${i+1}</td><td><b>${escapeHTML(pillar||"—")}</b></td><td>${escapeHTML(x.age??"—")}세</td><td>${god}</td><td>${p.stem?STEM_ELEMENT[p.stem]:"—"} · ${p.branch||"—"}</td><td>${stage}</td><td>${branchRelations.length?branchRelations.map(escapeHTML).join("<br>"):"—"}</td></tr>`;}).join("");
- show("luckReport",`<p>진행 방향: ${l.forward?"순행":"역행"}</p><p>대운 시작 나이: ${escapeHTML(l.startAge??"확인 불가")}</p><p>시작 계산값: ${escapeHTML(l.startYears??"—")}년 ${escapeHTML(l.startMonths??"—")}개월 ${escapeHTML(l.startDays??"—")}일</p><table><thead><tr><th>순서</th><th>대운</th><th>나이</th><th>천간 십성</th><th>오행</th><th>지지 십이운성</th><th>원국 지지 관계</th></tr></thead><tbody>${rows}</tbody></table><p class="muted">대운의 십성은 원국 일간을 기준으로 계산하고, 십이운성은 대운 지지를 기준으로 표시합니다. 대운 지지와 원국의 합·충·형·파·해도 함께 표시하지만, 이 관계만으로 길흉을 판정하지 않습니다. 운결 통합 판정 용신은 ${final?.finalYongshin||"미산출"}(${final?.confidence||"—"})이며, 대운의 유불리는 이 오행과 격국·세운의 실제 작용을 함께 검토합니다.</p>`);
+ show("luckReport",`<p>진행 방향: ${l.forward?"순행":"역행"}</p><p>대운 시작 나이: ${escapeHTML(l.startAge??"확인 불가")}${natalObj?.__luckTimingApprox?" (출생 시각 미상: 정오 임시값에 따른 추정)":""}</p><p>시작 계산값: ${escapeHTML(l.startYears??"—")}년 ${escapeHTML(l.startMonths??"—")}개월 ${escapeHTML(l.startDays??"—")}일</p><table><thead><tr><th>순서</th><th>대운</th><th>나이</th><th>천간 십성</th><th>오행</th><th>지지 십이운성</th><th>원국 지지 관계</th></tr></thead><tbody>${rows}</tbody></table><p class="muted">${natalObj?.__luckTimingApprox?"출생 시각 미상으로 대운 시작 시점은 정오 임시값에 따른 추정치입니다. 실제 출생 시각에 따라 달라질 수 있습니다. ":""}대운의 십성은 원국 일간을 기준으로 계산하고, 십이운성은 대운 지지를 기준으로 표시합니다. 대운 지지와 원국의 합·충·형·파·해도 함께 표시하지만, 이 관계만으로 길흉을 판정하지 않습니다. 운결 통합 판정 용신은 ${final?.finalYongshin||"미산출"}(${final?.confidence||"—"})이며, 대운의 유불리는 이 오행과 격국·세운의 실제 작용을 함께 검토합니다.</p>`);
 }
 const SAVED_CHARTS_KEY="ungyeol.savedCharts.v1";
 function readSavedCharts(){try{const value=JSON.parse(localStorage.getItem(SAVED_CHARTS_KEY)||"[]");return Array.isArray(value)?value:[];}catch{return [];}}
 function writeSavedCharts(items){localStorage.setItem(SAVED_CHARTS_KEY,JSON.stringify(items));}
 function currentBirthData(prefix=""){
  const partner=prefix==="partner",get=(main,other)=>$(partner?other:main);
- return {date:get("birthDate","partnerDate").value,calendar:get("calendarType","partnerCalendar").value,leap:get("leapMonth","partnerLeap").value,gender:get("gender","partnerGender").value,timeMode:get("timeMode","partnerTimeMode").value,hour:get("birthHour","partnerHour").value,minute:get("birthMinute","partnerMinute").value,dayBoundary:get("dayBoundary","partnerBoundary").value};
+ return {date:get("birthDate","partnerDate").value,calendar:get("calendarType","partnerCalendar").value,leap:get("leapMonth","partnerLeap").value,gender:get("gender","partnerGender").value,timeMode:get("timeMode","partnerTimeMode").value,time:get("birthTime","partnerTime").value||"12:00",dayBoundary:get("dayBoundary","partnerBoundary").value,trueSolar:get("trueSolarEnabled","partnerTrueSolarEnabled").checked,longitude:get("birthLongitude","partnerLongitude").value};
 }
 function applyBirthData(data,prefix=""){
  const partner=prefix==="partner",set=(main,other,value)=>{const el=$(partner?other:main);if(el)el.value=value;};
- set("birthDate","partnerDate",data.date);set("calendarType","partnerCalendar",data.calendar||"solar");set("leapMonth","partnerLeap",data.leap||"false");set("gender","partnerGender",data.gender||"male");set("timeMode","partnerTimeMode",data.timeMode||"known");set("birthHour","partnerHour",data.hour||"23");set("birthMinute","partnerMinute",data.minute||"0");set("dayBoundary","partnerBoundary",data.dayBoundary||"midnight");
+ set("birthDate","partnerDate",data.date);set("calendarType","partnerCalendar",data.calendar||"solar");set("leapMonth","partnerLeap",data.leap||"false");set("gender","partnerGender",data.gender||"male");set("timeMode","partnerTimeMode",data.timeMode||"known");set("birthTime","partnerTime",data.time||(String(data.hour||"23").padStart(2,"0")+":"+String(data.minute||"0").padStart(2,"0")));set("dayBoundary","partnerBoundary",data.dayBoundary||"midnight");$(partner?"partnerTrueSolarEnabled":"trueSolarEnabled").checked=!!data.trueSolar;set("birthLongitude","partnerLongitude",data.longitude||"");
  $(partner?"partnerHourField":"hourField").classList.toggle("hidden",(data.timeMode||"known")==="unknown");
- $(partner?"partnerMinuteField":"minuteField").classList.toggle("hidden",(data.timeMode||"known")==="unknown");
+ $(partner?"partnerLongitudeField":"longitudeField").classList.toggle("hidden",!data.trueSolar||(data.timeMode||"known")==="unknown");
  $(partner?"partnerLeapField":"leapField").classList.toggle("hidden",(data.calendar||"solar")!=="lunar");
 }
 function renderSavedCharts(){
@@ -422,7 +438,17 @@ function handleSavedChartAction(event){
  if(event.target.closest("[data-compat-saved]")){applyBirthData(entry.data,"partner");$("compatTab").click();$("compatibilityReport").innerHTML='<p class="ok">‘'+escapeHTML(entry.name)+'’의 출생 정보를 궁합 상대방으로 적용했습니다. 본인 사주를 먼저 계산한 뒤 궁합 분석하기를 눌러 주세요.</p>';return;}
  if(event.target.closest("[data-delete-saved]")){if(!confirm("‘"+entry.name+"’의 저장 정보를 삭제할까요?"))return;writeSavedCharts(readSavedCharts().filter(x=>x.id!==entry.id));renderSavedCharts();}
 }
-async function calculateMain(){const btn=$("calculateButton");btn.disabled=true;$("status").textContent="만세력 계산 중…";try{const calc=await loadEngine(),input=buildInput();const result=calc({...input});const obj={...result.toObject(),__unknownTime:input.unknown};natalResult=result;natalObj=obj;renderChart(obj,input.unknown);renderBasic(obj);renderLuck(result);$("status").innerHTML='<span class="ok">계산이 완료되었습니다.</span>';}catch(e){$("status").innerHTML=`<span class="error">${escapeHTML(e.message||e)}</span>`;}finally{btn.disabled=false;}}
+async function calculateMain(){
+ const btn=$("calculateButton");btn.disabled=true;$("status").textContent="만세력 계산 중…";
+ natalResult=null;natalObj=null;partnerResult=null;partnerObj=null;
+ show("compatibilityReport","본인 사주를 다시 계산했습니다. 상대방 정보를 다시 계산해 주세요.");show("compatFullReport","");show("partnerPersonalReport","상대방 사주 계산 후 표시됩니다.");show("fullReport","");show("yearReport","");
+ try{const calc=await loadEngine(),input=buildInput(),result=calc({...input}),obj={...result.toObject(),__unknownTime:input.unknown,__luckTimingApprox:input.unknown,__trueSolarTime:!!input.trueSolarTime,__dayBoundary:input.dayBoundary,__dayBoundaryUnknown:input.unknown,__birthDate:solarBirthDate(input)};
+ natalResult=result;natalObj=obj;renderChart(obj,input.unknown);renderBasic(obj);renderLuck(result);
+ $("status").innerHTML='<span class="ok">계산이 완료되었습니다.</span>'+(input.unknown?' <span class="sub">출생 시각 미상: 시주는 제외하고 자시 경계는 당일 일주 임시 기준으로 처리했습니다. 대운 시작 시점은 정오 임시값에 따른 추정입니다.</span>':'');
+ }catch(e){show("chartReport","계산 결과가 없습니다. 입력값과 만세력 연결을 확인해 주세요.");show("strengthReport","");show("structureReport","");show("voidReport","");show("climateReport","");show("usefulReport","");show("luckReport","");$("status").innerHTML=`<span class="error">${escapeHTML(e.message||e)}</span>`;}
+ finally{btn.disabled=false;}
+}
+
 const STEM_COMB=[["갑","기"],["을","경"],["병","신"],["정","임"],["무","계"]],STEM_CLASH=[["갑","경"],["을","신"],["병","임"],["정","계"]];
 const PAIRS={육합:[["자","축"],["인","해"],["묘","술"],["진","유"],["사","신"],["오","미"]],충:[["자","오"],["축","미"],["인","신"],["묘","유"],["진","술"],["사","해"]],해:[["자","미"],["축","오"],["인","사"],["묘","진"],["신","해"],["유","술"]],파:[["자","유"],["축","진"],["인","해"],["묘","오"],["사","신"],["미","술"]],형:[["인","사"],["사","신"],["신","인"],["축","술"],["술","미"],["미","축"],["자","묘"],["묘","자"]],원진:[["자","미"],["축","오"],["인","유"],["묘","신"],["진","해"],["사","술"]]};
 const TRIADS=[["신","자","진"],["해","묘","미"],["인","오","술"],["사","유","축"]];
@@ -478,6 +504,42 @@ function crossLuckPillars(result,own,other,side){
  }
  return rows;
 }
+function addCalendarDuration(base,years=0,months=0,days=0){
+ const monthIndex=base.getUTCMonth()+months,year=base.getUTCFullYear()+years+Math.floor(monthIndex/12),month=((monthIndex%12)+12)%12;
+ const lastDay=new Date(Date.UTC(year,month+1,0)).getUTCDate(),day=Math.min(base.getUTCDate(),lastDay);
+ const result=new Date(Date.UTC(year,month,day));result.setUTCDate(result.getUTCDate()+days);return result;
+}
+function luckPeriods(result,obj){
+ const luck=result?.luckPillars,birth=obj?.__birthDate;
+ if(!luck||!birth||![luck.startYears,luck.startMonths,luck.startDays].every(Number.isFinite))return [];
+ const [y,m,d]=birth.split("-").map(Number),base=new Date(Date.UTC(y,m-1,d));
+ if(!Number.isFinite(base.getTime()))return [];
+ if(base.getUTCFullYear()!==y||base.getUTCMonth()!==m-1||base.getUTCDate()!==d)return [];
+ const first=addCalendarDuration(base,luck.startYears,luck.startMonths,luck.startDays);
+ const rows=[];let start=first;
+ for(const item of luck.pillars||[]){
+  const end=addCalendarDuration(start,10,0,0),pillar=String(item.korean||item.pillar||"");
+  if(pillar)rows.push({age:item.age??"—",pillar,start,end});
+  start=end;
+ }
+ return rows;
+}
+function simultaneousLuckComparison(resultA,resultB,objA,objB){
+ const a=luckPeriods(resultA,objA),b=luckPeriods(resultB,objB);
+ if(!a.length||!b.length)return {available:false,reason:"두 사람의 양력 생일 또는 대운 시작 세부값이 없어 동시 대운 기간을 계산하지 못했습니다.",rows:[]};
+ const rows=[];
+ for(const x of a)for(const y of b){
+  const start=new Date(Math.max(x.start.getTime(),y.start.getTime())),end=new Date(Math.min(x.end.getTime(),y.end.getTime()));
+  if(start>=end)continue;
+  const p=parts(x.pillar),q=parts(y.pillar),stemHits=[];
+  if(pairHas(STEM_COMB,p.stem,q.stem))stemHits.push("천간합 "+p.stem+"-"+q.stem);
+  if(pairHas(STEM_CLASH,p.stem,q.stem))stemHits.push("천간충 "+p.stem+"-"+q.stem);
+  const branchHits=relation(p.branch,q.branch);
+  rows.push({from:start.toISOString().slice(0,10),to:end.toISOString().slice(0,10),ageA:x.age,ageB:y.age,pillarA:x.pillar,pillarB:y.pillar,stemHits,branchHits});
+ }
+ rows.sort((x,y)=>x.from.localeCompare(y.from));
+ return {available:true,approx:!!(objA.__luckTimingApprox||objB.__luckTimingApprox),rows};
+}
 function compat(a,b){
  const pa=parts(a.day),pb=parts(b.day),elems=compareElements(a,b),rel=[],crossRel=[],aBranches=branchEntries(a,"본인"),bBranches=branchEntries(b,"상대방"),entries=[...aBranches,...bBranches];
  const keys=["year","month","day","hour"];
@@ -497,20 +559,33 @@ function compat(a,b){
  const candidatesA=usefulA.combinedCandidates||[],candidatesB=usefulB.combinedCandidates||[];
  const usefulOverlap=candidatesA.filter(x=>candidatesB.includes(x));
  const usefulCross={a:candidatesA,b:candidatesB,overlap:usefulOverlap,aInB:distribution(b),bInA:distribution(a)};
- const luckAtoB=crossLuckPillars(natalResult,a,b,"상대방"),luckBtoA=crossLuckPillars(partnerResult,b,a,"본인");
+ const luckAtoB=crossLuckPillars(natalResult,a,b,"상대방"),luckBtoA=crossLuckPillars(partnerResult,b,a,"본인"),simultaneousLuck=simultaneousLuckComparison(natalResult,partnerResult,a,b);
  const strengthGap=Math.abs(strengthA.ratio-strengthB.ratio),strengthBalance=strengthGap<.08?"비슷한 강약 참고 지표":strengthGap<.2?"완만한 강약 차이":"강약 참고 지표의 차이가 비교적 큼";
  const climateContrast={temperature:climateA.t+" / "+climateB.t,moisture:climateA.h+" / "+climateB.h,season:climateA.season+" / "+climateB.season};
  const dayA=STEM_ELEMENT[pa.stem],dayB=STEM_ELEMENT[pb.stem];
  const interactionSummary={sameDayElement:dayA===dayB,spouseRelation:relation(pa.branch,pb.branch),usefulOverlap};
- return {pa,pb,luckAtoB,luckBtoA,dayA,dayB,dayRelation:elementRelation(dayA,dayB),dayGodAB:tenGod(pa.stem,pb.stem),dayGodBA:tenGod(pb.stem,pa.stem),strengthA,strengthB,strengthGap,strengthBalance,climateA,climateB,climateContrast,usefulA,usefulB,spouseA,spouseB,usefulCross,interactionSummary,rel,crossRel,triadRelations,directionRelations,assemblies,amhapPrimary,amhapAlternate,spouse:relation(pa.branch,pb.branch),elems};
+ return {pa,pb,luckAtoB,luckBtoA,simultaneousLuck,dayA,dayB,dayRelation:elementRelation(dayA,dayB),dayGodAB:tenGod(pa.stem,pb.stem),dayGodBA:tenGod(pb.stem,pa.stem),strengthA,strengthB,strengthGap,strengthBalance,climateA,climateB,climateContrast,usefulA,usefulB,spouseA,spouseB,usefulCross,interactionSummary,rel,crossRel,triadRelations,directionRelations,assemblies,amhapPrimary,amhapAlternate,spouse:relation(pa.branch,pb.branch),elems};
 }
 function compareElements(a,b){const x=distribution(a),y=distribution(b),o={};for(const e of Object.keys(x))o[e]=[x[e].toFixed(2),y[e].toFixed(2)];return o;}
-async function calcPartner(){try{if(!natalObj)throw Error("먼저 본인 사주를 계산해 주세요.");const input=buildInput("partner");const calc=await loadEngine();partnerResult=calc({...input});partnerObj={...partnerResult.toObject(),__unknownTime:input.unknown};const r=compat(natalObj,partnerObj);show("compatibilityReport",`<p>본인 일간: ${r.pa.stem}(${r.dayA}) · 상대방 일간: ${r.pb.stem}(${r.dayB})</p><p>일간 오행 관계: <b>${r.dayRelation}</b></p><p>상대방 일간은 본인에게 ${r.dayGodAB}, 본인 일간은 상대방에게 ${r.dayGodBA}로 작용합니다(일간 기준 십성).</p><p>배우자궁(일지) 관계: ${r.spouse.join(" · ")||"별도 관계 없음"}</p><h3>기둥별 합·충·형·파·해</h3>${r.rel.map(x=>`<p>${escapeHTML(x)}</p>`).join("")||"<p>표시할 교차 관계가 없습니다.</p>"}<h3>오행 분포 비교</h3><table><thead><tr><th>오행</th><th>본인</th><th>상대방</th></tr></thead><tbody>${Object.entries(r.elems).map(([e,v])=>`<tr><td>${e}</td><td>${v[0]}</td><td>${v[1]}</td></tr>`).join("")}</tbody></table><p class="muted">간단 비교입니다. 상세 궁합 리포트에서는 교차 기둥의 천간·지지 관계, 삼합·방합·반합, 두 기준의 암합, 원진 및 십이운성까지 나누어 확인할 수 있습니다. 합화 여부와 최종 용신에 따른 궁합의 유불리는 확정하지 않습니다.</p>`);}catch(e){show("compatibilityReport",`<span class="error">${escapeHTML(e.message||e)}</span>`);}}
+function individualReportHTML(obj,result,label){
+ const s=analyzeStrength(obj),c=analyzeClimate(obj),u=analyzeUseful(obj),g=analyzePattern(obj),f=finalizeYongshin(obj),st=analyzeStructure(obj),luck=result?.luckPillars;
+ const pillars=[["년주",obj.year],["월주",obj.month],["일주",obj.day],["시주",obj.__unknownTime?"출생 시간 미상":obj.hour||"미상"]];
+ const qi=st.hidden.map(x=>x.position+" "+x.branch+" 속 "+x.stem+"("+(x.main?"본기":"중기·여기")+") "+x.god).join(" · ")||"지장간 자료 없음";
+ const roots=st.rootHits.map(x=>x.position+" "+x.branch+" 속 "+x.stem).join(" · ")||"일간 통근이 확인되지 않음";
+ return `<div class="report-overview"><h3>${label} 독립 사주 리포트</h3><p><strong>일간 ${s.stem}(${s.day}) · ${s.label}</strong></p><p>${pillars.map(x=>x[0]+" "+escapeHTML(x[1]||"미상")).join(" · ")}</p><p>궁합 상대와 분리해 해당 원국 자체의 구조를 먼저 풀이합니다.</p></div>
+ <h3>1. 원국과 일간</h3><p><b>분석 결과:</b> 일간은 ${s.stem}(${s.day})이며 강약 보조 지표는 ${s.label}입니다.</p><p><b>판단 근거:</b> 월령 관계는 ${s.monthRelation}, 월지 지원은 ${s.monthBranchSupport.toFixed(2)}, 참고 비율은 ${(s.ratio*100).toFixed(1)}%입니다.</p><p><b>명리학적 의미:</b> 일간은 원국 해석의 기준점입니다. 강약은 오행 개수뿐 아니라 계절의 힘, 뿌리, 천간에 드러난 기운을 함께 살핍니다.</p><p><b>종합 해석:</b> ${s.scoreNote} ${s.label}은 확정 판정이 아니라 원국의 지원과 소모를 비교하는 출발점입니다.</p>
+ <h3>2. 월령·격국·지장간</h3><p><b>분석 결과:</b> 월지 ${g.month?.branch||"미상"}의 본기 ${g.main?.stem||"미상"}(${g.main?.god||"십성 미상"})를 중심으로 ${g.candidate} 후보를 검토합니다.</p><p><b>판단 근거:</b> 지장간은 ${qi}. 일간의 뿌리는 ${roots}. 월지 본기는 ${g.mainExposed?"투출":"미투출"}입니다.</p><p><b>명리학적 의미:</b> 월령은 계절의 주도권, 지장간은 지지 내부의 기운을 설명합니다. 투간과 통근은 그 기운이 천간에 드러나고 뿌리를 얻었는지를 구분합니다.</p><p><b>종합 해석:</b> 격국 후보는 월지 본기와 투출을 우선한 참고값이며 격국 성패를 확정한 결과는 아닙니다.</p>
+ <h3>3. 한난조습과 조후</h3><p><b>분석 결과:</b> 계절은 ${c.season}, 한난은 ${c.t}, 조습은 ${c.h}입니다.</p><p><b>판단 근거:</b> ${c.tempBasis} ${c.moistBasis} 월지 지장간은 ${c.monthQi.map(x=>x.stem+"("+x.role+")").join(" · ")}이며 화·수 투출은 ${c.exposed.join(" · ")||"확인되지 않음"}, 통근은 ${c.climateRoots.join(" · ")||"확인되지 않음"}입니다.</p><p><b>명리학적 의미:</b> 조후는 원국의 차고 더움, 마르고 습한 기후적 치우침을 살핍니다. 같은 오행도 계절과 뿌리에 따라 조절력이 다릅니다.</p><p><b>종합 해석:</b> ${climatePlain(c)} ${climateInterpretation(c,u)}</p>
+ <h3>4. 용신 체계별 검토</h3><p><b>조후용신 후보:</b> ${u.climateCandidates.map(x=>x.element+" — "+x.reason).join(" · ")||"뚜렷한 후보 없음"}.</p><p><b>억부용신 후보:</b> ${u.suppression.join(" · ")||"단일 후보를 제시하지 않음"}.</p><p><b>통관 후보:</b> ${u.bridge.map(x=>x.conflict+" → "+x.element+(x.present?"(존재)":"(미약)")).join(" · ")||"뚜렷한 후보 없음"}.</p><p><b>운결 통합 잠정 용신:</b> ${f.finalYongshin}(${f.confidence}). <b>희신 후보:</b> ${f.favorable.join(" · ")||"추가 검토 필요"}. <b>상대적 주의 후보(기신 확정 아님):</b> ${f.unfavorable.join(" · ")||"확정하지 않음"}.</p><p><b>판단 근거:</b> ${f.reasons.join(" · ")||"각 판정 기준의 점수가 비슷함"}.</p><p><b>종합 해석:</b> 조후·억부·격국의 요구는 서로 다를 수 있습니다. 현재 용신은 계산 휴리스틱의 잠정 후보이며 고전 명리의 확정 결론이 아닙니다.</p>
+ <h3>5. 대운 흐름</h3><p><b>분석 결과:</b> ${luck?(luck.forward?"순행":"역행")+" · 시작 나이 "+(luck.startAge??"미상")+"세":"대운 자료 없음"}.</p><p><b>판단 근거:</b> ${luck?(luck.pillars||[]).slice(0,8).map(x=>(x.korean||x.pillar)+" "+x.age+"세").join(" · "):"엔진에서 대운 자료를 제공하지 않음"}.</p><p><b>명리학적 의미:</b> 대운은 일정 기간의 간지 흐름을 원국과 대조하는 시간 단위입니다. 대운 간지만으로 길흉을 결정하지 않습니다.</p><p><b>종합 해석:</b> ${obj.__luckTimingApprox?"출생 시각 미상으로 정오 임시값에 따른 추정이며 실제 출생 시각에 따라 시작 시점이 달라집니다.":"입력한 출생 시각을 기준으로 계산한 시작 시점입니다."} 대운은 시기별로 점검할 주제를 살피는 참고 자료입니다.</p>
+ <div class="notice">전통 명리학의 참고 해석입니다. 격국·용신·희신·기신은 학파별 차이가 있으며 개인의 미래를 단정하지 않습니다.</div>`;
+}
+async function calcPartner(){partnerResult=null;partnerObj=null;show("compatibilityReport","궁합 계산 중…");show("compatFullReport","");show("partnerPersonalReport","");try{if(!natalObj)throw Error("먼저 본인 사주를 계산해 주세요.");const input=buildInput("partner");const calc=await loadEngine();partnerResult=calc({...input});partnerObj={...partnerResult.toObject(),__unknownTime:input.unknown,__luckTimingApprox:input.unknown,__trueSolarTime:!!input.trueSolarTime,__dayBoundary:input.dayBoundary,__dayBoundaryUnknown:input.unknown,__birthDate:solarBirthDate(input)};const r=compat(natalObj,partnerObj);show("partnerPersonalReport",individualReportHTML(partnerObj,partnerResult,"상대방"));show("compatibilityReport",`<p>본인 일간: ${r.pa.stem}(${r.dayA}) · 상대방 일간: ${r.pb.stem}(${r.dayB})</p><p>일간 오행 관계: <b>${r.dayRelation}</b></p><p>상대방 일간은 본인에게 ${r.dayGodAB}, 본인 일간은 상대방에게 ${r.dayGodBA}로 작용합니다(일간 기준 십성).</p><p>배우자궁(일지) 관계: ${r.spouse.join(" · ")||"별도 관계 없음"}</p><h3>기둥별 합·충·형·파·해</h3>${r.rel.map(x=>`<p>${escapeHTML(x)}</p>`).join("")||"<p>표시할 교차 관계가 없습니다.</p>"}<h3>오행 분포 비교</h3><table><thead><tr><th>오행</th><th>본인</th><th>상대방</th></tr></thead><tbody>${Object.entries(r.elems).map(([e,v])=>`<tr><td>${e}</td><td>${v[0]}</td><td>${v[1]}</td></tr>`).join("")}</tbody></table><p class="muted">간단 비교입니다. 상세 궁합 리포트에서는 교차 기둥의 천간·지지 관계, 삼합·방합·반합, 두 기준의 암합, 원진 및 십이운성까지 나누어 확인할 수 있습니다. 합화 여부와 최종 용신에 따른 궁합의 유불리는 확정하지 않습니다.</p>`);}catch(e){partnerResult=null;partnerObj=null;show("compatibilityReport",`<span class="error">${escapeHTML(e.message||e)}</span>`);show("compatFullReport","");show("partnerPersonalReport","상대방 사주 계산에 실패해 독립 리포트를 만들 수 없습니다.");}}
 async function calcYear(){
  try{
   if(!natalObj)throw Error("먼저 본인 사주를 계산해 주세요.");
   const year=Number($("fortuneYear").value),calc=await loadEngine();
-  const r=calc({year,month:7,day:1,hour:12,minute:0,isLunar:false,isLeapMonth:false,gender:"male",dayBoundary:"midnight"});
+  const r=calc({year,month:3,day:1,hour:12,minute:0,isLunar:false,isLeapMonth:false,gender:"male",dayBoundary:"midnight"});
   const obj=r.toObject(),p=parts(obj.year),day=parts(natalObj.day),god=tenGod(day.stem,p.stem);
   const interactions=branchEntries(natalObj,"본인").flatMap(x=>relation(x.branch,p.branch).map(kind=>x.position+" "+x.branch+"와 세운 지지 "+p.branch+"의 "+kind));
   const stemRelations=["year","month","day","hour"].filter(k=>!(k==="hour"&&natalObj.__unknownTime)).flatMap(k=>{
@@ -520,7 +595,7 @@ async function calcYear(){
    return out;
   });
   const stage=twelveStage(day.stem,p.branch);
-  show("yearReport",`<h3>${year}년 세운 ${escapeHTML(obj.year)}</h3><p><b>세운 천간:</b> ${p.stem}(${STEM_ELEMENT[p.stem]}) · 일간 기준 십성 <b>${god}</b></p><p><b>세운 지지:</b> ${p.branch} · 일간 기준 십이운성 <b>${stage}</b></p><p><b>세운 천간과 원국의 합·충</b></p><ul>${stemRelations.length?stemRelations.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>원국 천간과 직접 확인되는 천간합·천간충이 없습니다.</li>"}</ul><p><b>세운 지지와 원국의 합·충·형·파·해·원진</b></p><ul>${interactions.length?interactions.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>현재 원국 지지와 직접 확인되는 관계가 없습니다.</li>"}</ul><p><b>세운 천간의 오행 관계:</b> ${elementRelation(STEM_ELEMENT[day.stem],STEM_ELEMENT[p.stem])}</p><p class="muted">선택 연도의 7월 1일을 기준으로 만세력 엔진에서 연주를 가져옵니다. 연주는 입춘을 경계로 바뀌므로 1~2월 초의 실제 날짜 적용은 별도 확인이 필요합니다. 세운 지지는 일간 기준 십이운성으로 표시하며, 길흉은 원국·대운·용신을 함께 보아야 합니다. 합충 한두 개만으로 사건을 예측하지 않습니다.</p>`);
+  show("yearReport",`<h3>${year}년 세운 ${escapeHTML(obj.year)}</h3><p><b>세운 천간:</b> ${p.stem}(${STEM_ELEMENT[p.stem]}) · 일간 기준 십성 <b>${god}</b></p><p><b>세운 지지:</b> ${p.branch} · 일간 기준 십이운성 <b>${stage}</b></p><p><b>세운 천간과 원국의 합·충</b></p><ul>${stemRelations.length?stemRelations.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>원국 천간과 직접 확인되는 천간합·천간충이 없습니다.</li>"}</ul><p><b>세운 지지와 원국의 합·충·형·파·해·원진</b></p><ul>${interactions.length?interactions.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>현재 원국 지지와 직접 확인되는 관계가 없습니다.</li>"}</ul><p><b>세운 천간의 오행 관계:</b> ${elementRelation(STEM_ELEMENT[day.stem],STEM_ELEMENT[p.stem])}</p><p class="muted">선택 연도의 3월 1일을 대표일로 삼아 만세력 엔진에서 입춘 이후 연주를 가져옵니다. 세운은 연 단위 대표값이며 1월~입춘 전 실제 날짜의 연주는 해당 날짜의 입춘 절입 시각을 기준으로 별도 판정해야 합니다. 세운 지지는 일간 기준 십이운성으로 표시하며, 길흉은 원국·대운·용신을 함께 보아야 합니다. 합충 한두 개만으로 사건을 예측하지 않습니다.</p>`);
  }catch(e){show("yearReport",`<span class="error">${escapeHTML(e.message||e)}</span>`);}
 }
 function fullReport(){
@@ -547,14 +622,14 @@ function fullReport(){
  <h3>5. 겉으로 드러난 기운과 마음속 바탕</h3><p>천간은 비교적 겉으로 드러나는 모습, 지장간은 지지 안에 함께 들어 있는 바탕의 기운으로 비유할 수 있습니다. 그래서 같은 십성이 있어도 겉으로 쉽게 표현되는지, 속에 잠재되어 있는지 구분해서 읽습니다.</p><ul>${hidden}</ul><p><b>나를 직접 받쳐 주는 뿌리:</b> ${root||"이번 기초 분석에서는 뚜렷한 같은 오행의 뿌리가 확인되지 않았습니다."}</p><p><b>나를 도와주는 배경의 뿌리:</b> ${resource||"이번 기초 분석에서는 뚜렷한 인성의 뿌리가 확인되지 않았습니다."}</p><p>뿌리가 있다는 것은 그 기운이 지지 속에도 자리하고 있다는 뜻입니다. 다만 뿌리의 개수만 세어 강약을 정할 수는 없고, 어느 계절·위치에 있는지까지 따져야 합니다.</p>
  <h3>6. 태어난 계절과 한난조습</h3><p>${seasonWords[c.season]||c.season}에 태어난 사주입니다. 명리에서는 사람의 사주를 나무·불·흙·쇠·물의 배치로만 보지 않고, 그 기운이 어떤 계절과 기후 속에 놓였는지도 중요하게 봅니다.</p><p>${climatePlain(c)}</p><div class="notice"><h4>한난조습을 실제로 해석하면</h4><p><b>① 한난 — 차가움과 뜨거움:</b> ${tempReading}</p><p><b>② 조습 — 건조함과 습함:</b> ${moistReading}</p><p><b>③ 두 축을 함께 보면:</b> ${climateCombined}</p><p><b>일상에 적용한 참고:</b> ${climatePractical}</p></div><p><b>계절의 바탕:</b> ${c.season}. <b>월지 안의 기운:</b> ${c.monthQi.map(x=>x.stem+"("+x.role+")").join(" · ")}.</p><p><b>겉으로 드러난 불·물:</b> ${c.exposed.join(" · ")||"불과 물에 해당하는 천간이 겉으로 드러나지 않음"}.</p><p><b>지지 안의 불·물 뿌리:</b> ${c.climateRoots.join(" · ")||"뚜렷한 불·물의 뿌리가 확인되지 않음"}.</p>
  <h3>7. 나에게 도움이 되는 오행과 최종 용신</h3><p>기초 강약 지표에서 억부 후보는 <b>${u.suppression.join(" · ")||"뚜렷하지 않음"}</b>, 조후 후보는 <b>${u.climateCandidates.map(x=>x.element).join(" · ")||"뚜렷하지 않음"}</b>으로 나타납니다. 원국에 없는 오행이라고 자동으로 용신이 되는 것은 아닙니다.</p><div class="notice"><p><b>운결 통합 최종 용신: ${final.finalYongshin} (${final.confidence})</b></p><p>월령·격국을 먼저 살피고, 억부와 조후를 교차 검토한 뒤 통관 가능성을 보조 반영해 대표 오행 하나를 선정했습니다.</p><p><b>판정 근거:</b> ${final.reasons.join(" · ")||"여러 기준의 점수가 비슷해 잠정적으로 선택했습니다."}</p><p><b>차순위:</b> ${final.ranked.slice(1,3).map(x=>x.element+"("+x.score+")").join(" · ")}</p></div>
- <h3>8. 격국·용신 세부 검토</h3><p><b>격국 후보:</b> ${escapeHTML(u.pattern.candidate)}. <b>월령 본기:</b> ${u.pattern.main?.stem||"자료 없음"}(${u.pattern.main?.god||"—"}) · ${u.pattern.main?.exposed?"천간 투출":"미투출"}.</p><p><b>파격·재검토 단서:</b> ${u.pattern.breakFactors?.map(escapeHTML).join(" · ")||"현재 단순 점검에서 뚜렷한 단서가 확인되지 않음"}.</p><p><b>통관 후보:</b> ${u.bridge.map(x=>x.conflict+" → "+x.element+(x.present?"(존재)":"(미약)")).join(" · ")||"뚜렷한 후보 없음"}.</p><p><b>희신 참고 후보:</b> ${final.favorable.join(" · ")} · <b>주의 오행:</b> ${final.unfavorable.join(" · ")||"뚜렷하게 배제할 오행 없음"}. 희신·기신은 용신을 기준으로 자동 확정되는 것이 아니므로, 이 표시는 후속 검토용 참고입니다.</p><p class="muted">${final.finalNote}</p><h3>9. 공망 참고</h3><p><b>일주 기준 공망 지지:</b> ${Array.isArray(natalResult?.voidBranches)&&natalResult.voidBranches.length?natalResult.voidBranches.map(escapeHTML).join(" · "):"엔진 자료 없음"}</p><p>공망은 일주가 속한 순(旬)에서 비어 있는 두 지지를 가리키는 개념입니다. 해당 지지가 원국이나 대운·세운에서 나타난다고 해서 그 자체로 흉하다고 단정하지 않으며, 해당 글자의 십성과 다른 합충 관계를 함께 살펴야 합니다.</p><h3>10. 전체 요약</h3><p>이 사주를 읽을 때의 핵심은 <b>${s.label}</b>이라는 기초 강약 표시 하나에 결론을 맡기지 않는 것입니다. 일간을 중심으로 어떤 십성이 겉에 드러나고, 어떤 기운이 지지 안에 뿌리를 두며, 태어난 계절의 차고 더움과 습하고 건조함을 어떻게 조절하는지 함께 보아야 합니다.</p><div class="notice">이 리포트는 전통 명리학을 쉽게 설명하기 위한 기초 풀이입니다. 출생 시간이 미상인 경우 시주는 계산에서 제외하고, 대운의 시작 시점과 흐름도 엔진이 제공한 값을 사용합니다. 격국은 월지 본기와 지장간 투출, 건록·양인 해당 여부를 중심으로 후보를 제시하지만 성패를 확정하지 않습니다. 용신은 조후·억부·통관을 구분한 검토 후보이며, 최종 용신·희신·기신 판정에는 월령의 왕쇠, 합충형파 및 대운을 함께 살피는 추가 검증이 필요합니다. 미래나 성격을 단정하지 않습니다.</div>`);
+ <h3>8. 격국·용신 세부 검토</h3><p><b>격국 후보:</b> ${escapeHTML(u.pattern.candidate)}. <b>월령 본기:</b> ${u.pattern.main?.stem||"자료 없음"}(${u.pattern.main?.god||"—"}) · ${u.pattern.main?.exposed?"천간 투출":"미투출"}.</p><p><b>파격·재검토 단서:</b> ${u.pattern.breakFactors?.map(escapeHTML).join(" · ")||"현재 단순 점검에서 뚜렷한 단서가 확인되지 않음"}.</p><p><b>통관 후보:</b> ${u.bridge.map(x=>x.conflict+" → "+x.element+(x.present?"(존재)":"(미약)")).join(" · ")||"뚜렷한 후보 없음"}.</p><p><b>희신 참고 후보:</b> ${final.favorable.join(" · ")} · <b>상대적 주의 후보(기신 확정 아님):</b> ${final.unfavorable.join(" · ")||"뚜렷한 후보 없음"}. 희신과 기신은 용신 점수만으로 확정할 수 없으며, 이 표시는 후속 검토용 참고입니다.</p><p class="muted">${final.finalNote}</p><h3>9. 공망 참고</h3><p><b>일주 기준 공망 지지:</b> ${Array.isArray(natalResult?.voidBranches)&&natalResult.voidBranches.length?natalResult.voidBranches.map(escapeHTML).join(" · "):"엔진 자료 없음"}</p><p>공망은 일주가 속한 순(旬)에서 비어 있는 두 지지를 가리키는 개념입니다. 해당 지지가 원국이나 대운·세운에서 나타난다고 해서 그 자체로 흉하다고 단정하지 않으며, 해당 글자의 십성과 다른 합충 관계를 함께 살펴야 합니다.</p><h3>10. 전체 요약</h3><p>이 사주를 읽을 때의 핵심은 <b>${s.label}</b>이라는 기초 강약 표시 하나에 결론을 맡기지 않는 것입니다. 일간을 중심으로 어떤 십성이 겉에 드러나고, 어떤 기운이 지지 안에 뿌리를 두며, 태어난 계절의 차고 더움과 습하고 건조함을 어떻게 조절하는지 함께 보아야 합니다.</p><div class="notice">이 리포트는 전통 명리학을 쉽게 설명하기 위한 기초 풀이입니다. 출생 시간이 미상인 경우 시주는 계산에서 제외하고, 대운의 시작 시점과 흐름도 엔진이 제공한 값을 사용합니다. 격국은 월지 본기와 지장간 투출, 건록·양인 해당 여부를 중심으로 후보를 제시하지만 성패를 확정하지 않습니다. 용신은 조후·억부·통관을 구분한 검토 후보이며, 최종 용신·희신·기신 판정에는 월령의 왕쇠, 합충형파 및 대운을 함께 살피는 추가 검증이 필요합니다. 미래나 성격을 단정하지 않습니다.</div>`);
 }
 
 async function compatFullReport(){
  if(!natalObj||!partnerObj){show("compatFullReport","먼저 본인 사주를 계산하고 상대방 정보로 궁합 분석을 완료해 주세요.");return;}
  const year=Number($("fortuneYear").value),calc=await loadEngine();
- const annualA=calc({year,month:7,day:1,hour:12,minute:0,isLunar:false,isLeapMonth:false,gender:"male",dayBoundary:"midnight"}).toObject();
- const annualB=calc({year,month:7,day:1,hour:12,minute:0,isLunar:false,isLeapMonth:false,gender:"female",dayBoundary:"midnight"}).toObject();
+ const annualA=calc({year,month:3,day:1,hour:12,minute:0,isLunar:false,isLeapMonth:false,gender:"male",dayBoundary:"midnight"}).toObject();
+ const annualB=calc({year,month:3,day:1,hour:12,minute:0,isLunar:false,isLeapMonth:false,gender:"female",dayBoundary:"midnight"}).toObject();
  const annualPillarA=parts(annualA.year),annualPillarB=parts(annualB.year);
  const annualCross=(annual,other)=>{const p=parts(annual.year),hits=[];for(const k of ["year","month","day","hour"]){if(k==="hour"&&other.__unknownTime)continue;const q=parts(other[k]),pos={year:"년주",month:"월주",day:"일주",hour:"시주"}[k];if(pairHas(STEM_COMB,q.stem,p.stem))hits.push(pos+" 천간합");if(pairHas(STEM_CLASH,q.stem,p.stem))hits.push(pos+" 천간충");for(const rel of relation(q.branch,p.branch))hits.push(pos+" 지지"+rel);}return hits;};
  const annualAB=annualCross(annualA,partnerObj),annualBA=annualCross(annualB,natalObj),annualPair=[...(pairHas(STEM_COMB,annualPillarA.stem,annualPillarB.stem)?["두 사람 세운 천간합"]:[]),...(pairHas(STEM_CLASH,annualPillarA.stem,annualPillarB.stem)?["두 사람 세운 천간충"]:[]),...relation(annualPillarA.branch,annualPillarB.branch).map(x=>"두 사람 세운 지지"+x)];
@@ -572,17 +647,28 @@ async function compatFullReport(){
  const harmony=groups["천간합"].length+groups["육합"].length+groups["반합"].length+r.triadRelations.length+r.directionRelations.length;
  const tension=groups["천간충"].length+groups["충"].length+groups["형"].length+groups["파"].length+groups["해"].length+groups["자형"].length+groups["원진"].length;
  const spouse=r.spouse.length?r.spouse.join("·"):"대표적인 짝 관계가 확인되지 않음";
+  const simultaneous=r.simultaneousLuck;
+  const simultaneousHTML=!simultaneous.available
+   ?'<p class="muted">'+escapeHTML(simultaneous.reason)+'</p>'
+   :simultaneous.rows.length
+    ?'<ul>'+simultaneous.rows.map(x=>'<li>'+escapeHTML(x.from)+' ~ '+escapeHTML(x.to)+' · 본인 '+escapeHTML(x.ageA)+'세 '+escapeHTML(x.pillarA)+' / 상대방 '+escapeHTML(x.ageB)+'세 '+escapeHTML(x.pillarB)+' · '+escapeHTML([...x.stemHits,...x.branchHits].join(' · ')||'두 대운 간 직접 합·충 관계 없음')+'</li>').join('')+'</ul>'
+    :'<p>두 사람의 대운 기간이 겹치는 구간을 찾지 못했습니다.</p>';
+ const simultaneousNote=!simultaneous.available
+  ?"대운 동시 기간 계산에 필요한 양력 생일 또는 대운 시작 세부값을 확인할 수 없어 비교를 생략했습니다."
+  :simultaneous.approx
+   ?"출생 시각 미상인 사람이 포함되어 정오 임시값으로 계산된 근사 기간입니다."
+   :"두 사람 모두 출생 시각을 입력했더라도 3일=1년·1일=4개월 환산으로 산출한 참고 기간입니다.";
  show("compatFullReport",`<h2>運結 · 두 사람의 궁합 리포트</h2><p class="lead">만세력 계산으로 얻은 두 사람의 원국과 기둥 사이 관계를 바탕으로 풀이합니다. 궁합은 단순히 좋은 관계인지 나쁜 관계인지 판정하는 것이 아니라, 서로 잘 통하는 부분과 조율이 필요한 부분을 함께 이해하는 과정입니다.</p>
  <div class="report-overview"><h3>두 사람의 관계를 먼저 요약하면</h3><p>본인은 <strong>${r.pa.stem}(${r.dayA})</strong>, 상대방은 <strong>${r.pb.stem}(${r.dayB})</strong> 일간입니다. 두 일간의 오행 관계는 <strong>${r.dayRelation}</strong>로 나타납니다. 이는 서로에게 영향을 주고받는 방식의 상징이지, 한 사람이 다른 사람에게 일방적으로 좋거나 나쁘다는 판정은 아닙니다.</p><p>현재 원국 비교에서 합으로 분류된 관계는 <strong>${harmony}건</strong>, 충·형·파·해 등 긴장 관계로 분류된 항목은 <strong>${tension}건</strong>입니다. 숫자가 많다고 궁합이 좋거나 나쁘다는 뜻은 아닙니다. 중요한 것은 두 사람이 어떤 상황에서 편안함을 느끼고, 의견 차이가 생겼을 때 어떻게 조율하는가입니다.</p><p><strong>관계에서 실천할 점:</strong> 서로의 표현 방식과 연락·생활 리듬을 미리 이야기하고, 서운함이 생기면 상대의 의도를 단정하기보다 구체적인 행동을 확인해 보세요. 아래 내용은 이런 해석의 명리학적 근거를 자세히 설명합니다.</p></div>
  <h3>1. 오행·십성·십이운성으로 보는 두 사람의 기본 성향</h3>${explain("본인",aS,aC,aU,aT)}${explain("상대방",bS,bC,bU,bT)}<p><b>두 사람의 일간 관계:</b> ${godStory}</p><p><b>일간의 오행 관계:</b> 본인 ${r.dayA} · 상대방 ${r.dayB} · 관계 ${r.dayRelation}. 오행의 생극 관계는 서로에게 영향을 주는 방식의 상징으로 읽으며, 한쪽이 다른 쪽을 일방적으로 돕거나 해친다고 단정하지 않습니다.</p><h4>두 사람의 강약과 계절 환경</h4><p>본인 참고 지표는 <b>${r.strengthA.label}</b>(${(r.strengthA.ratio*100).toFixed(1)}%), 상대방은 <b>${r.strengthB.label}</b>(${(r.strengthB.ratio*100).toFixed(1)}%)으로 나타납니다. 두 지표의 차이는 <b>${r.strengthBalance}</b>입니다. 이 값은 각자 원국 내부의 참고 계산이며, 강한 쪽이 관계를 주도한다는 뜻은 아닙니다.</p><p>계절·조후 참고: 본인 ${r.climateA.season} · ${r.climateA.t} · ${r.climateA.h}; 상대방 ${r.climateB.season} · ${r.climateB.t} · ${r.climateB.h}. 서로의 환경 차이는 생활 속도와 휴식 방식, 감정 표현의 온도 차이를 돌아보는 질문으로 활용할 수 있습니다.</p><p>오행 분포는 다음과 같습니다.</p><table><thead><tr><th>오행</th><th>본인</th><th>상대방</th></tr></thead><tbody>${rows}</tbody></table><p>숫자가 많고 적은 것만으로 성격이나 궁합을 단정할 수는 없습니다. 부족한 오행을 상대방이 가지고 있더라도 그 기운이 실제로 도움이 되는지는 각자의 용신과 전체 원국을 함께 보아야 합니다.</p><h4>십이운성 비교</h4><div class="grid"><div><b>본인 (일간 ${r.pa.stem} 기준)</b><table><thead><tr><th>위치</th><th>지지</th><th>십이운성</th></tr></thead><tbody>${twelveTable(a12)}</tbody></table></div><div><b>상대방 (일간 ${r.pb.stem} 기준)</b><table><thead><tr><th>위치</th><th>지지</th><th>십이운성</th></tr></thead><tbody>${twelveTable(b12)}</tbody></table></div></div><p>본인은 ${a12.map(x=>x.position+" "+x.stage).join(" · ")}, 상대방은 ${b12.map(x=>x.position+" "+x.stage).join(" · ")}으로 나타납니다. 각자의 일간을 기준으로 네 지지를 따로 계산한 값이며, 서로의 운성을 직접 비교해 우열을 정하는 지표는 아닙니다.</p><p>장생·목욕·관대·건록·제왕·쇠·병·사·묘·절·태·양은 기운의 흐름을 비유한 단계입니다. 병·사·절 등의 이름을 실제 질병이나 이별의 예고로 해석해서는 안 됩니다.</p><p class="muted">계산 기준: 양간 순행·음간 역행, 무토는 병화와 기토는 정화와 같은 장생지를 쓰는 화토동법입니다. 음간의 순역 및 토의 장생지를 달리 보는 학설도 있으므로 다른 만세력과 차이가 날 수 있습니다.</p><p><b>일주 기준 공망:</b> 본인 ${aVoid.map(escapeHTML).join("·")||"자료 없음"} · 상대방 ${bVoid.map(escapeHTML).join("·")||"자료 없음"}. 공망은 보조 개념이며, 두 사람 사이의 관계를 단독으로 판단하지 않습니다.</p>
  <h3>배우자궁과 십성의 상호작용</h3><p>본인의 배우자궁인 일지 ${r.pa.branch}의 지장간은 ${r.spouseA.map(x=>x.stem+"("+x.role+")").join(" · ")||"확인 자료 없음"}입니다. 본인 일간 기준 십성은 ${r.spouseA.map(x=>x.ownGod).join("·")||"미상"}, 상대방 일간 기준으로는 ${r.spouseA.map(x=>x.otherGod).join("·")||"미상"}입니다.</p><p>상대방의 배우자궁인 일지 ${r.pb.branch}의 지장간은 ${r.spouseB.map(x=>x.stem+"("+x.role+")").join(" · ")||"확인 자료 없음"}입니다. 상대방 자신의 일간 기준 십성은 ${r.spouseB.map(x=>x.ownGod).join("·")||"미상"}, 본인 일간 기준으로는 ${r.spouseB.map(x=>x.otherGod).join("·")||"미상"}입니다.</p><p class="muted">배우자궁 지장간을 각자의 일간과 상대방 일간 양쪽에서 읽은 보조 비교입니다. 특정 십성만으로 결혼의 성패를 단정하지 않습니다.</p><h3>서로의 용신 후보와 오행 보완 가능성</h3><p>본인의 최종 용신: ${aF.finalYongshin}(${aF.confidence}) · 상대방의 최종 용신: ${bF.finalYongshin}(${bF.confidence})</p><p>두 사람의 최종 용신 오행이 ${aF.finalYongshin===bF.finalYongshin?"같습니다":"다릅니다"}</p><p>상대방 원국의 본인 후보 오행 분포: ${r.usefulCross.a.map(e=>e+" "+r.usefulCross.aInB[e].toFixed(2)).join(" · ")||"후보 없음"} · 본인 원국의 상대방 후보 오행 분포: ${r.usefulCross.b.map(e=>e+" "+r.usefulCross.bInA[e].toFixed(2)).join(" · ")||"후보 없음"}</p><p class="muted">용신은 각자의 원국에서 독립적으로 판정했습니다. 상대방이 해당 오행을 많이 가진다고 반드시 나에게 이롭다는 뜻은 아닙니다.</p><h3>2. 천간합과 천간충: 첫인상과 대화 방식</h3><p>천간은 겉으로 드러나는 태도와 표현 방식의 단서로 읽습니다. 천간합은 서로의 생각이나 행동 방식이 연결되는 지점, 천간충은 표현의 방향이나 판단 기준이 달라 부딪힐 수 있는 지점으로 살펴봅니다.</p><p><b>천간합</b></p><ul>${list(groups["천간합"],"현재 비교에서 확인된 천간합이 없습니다.")}</ul><p><b>천간충</b></p><ul>${list(groups["천간충"],"현재 비교에서 확인된 천간충이 없습니다.")}</ul><p>합이 있다고 언제나 대화가 잘 통한다는 뜻은 아니며, 충이 있다고 반드시 다툰다는 뜻도 아닙니다. 실제로는 서로의 말을 받아들이는 속도와 표현의 강도를 조절하는 것이 중요합니다.</p>
  <h3>3. 지지의 합: 정서적 교류와 현실적인 접점</h3><p>지지는 생활 습관과 가까운 관계에서 드러나는 바탕을 살피는 단서입니다. 육합은 둘 사이에 연결점이 생기는 관계, 삼합·반합은 공통의 관심사나 목표를 향해 기운이 모이는 관계, 암합은 겉으로 뚜렷하게 드러나지 않는 교류의 가능성으로 풀이합니다.</p><p><b>육합</b></p><ul>${list(groups["육합"],"현재 비교에서 확인된 육합이 없습니다.")}</ul><p><b>반합</b></p><ul>${list(groups["반합"],"두 사람의 지지 사이에서 삼합을 이루는 두 글자 조합이 확인되지 않았습니다.")}</ul><p><b>삼합·방합 결집 단계</b></p><ul>${list(r.assemblies.map(x=>x.name+" "+x.group+" — "+x.level+"; 확인된 글자 "+x.present.join("")+"; 빠진 글자 "+(x.missing.join("")||"없음")+"; 본인 월지 "+(x.monthIn?"포함":"미포함")+"; "+(x.clashPairs.length?"내부 충 "+x.clashPairs.join("/"):"내부 충 없음")),"두 사람의 지지를 합쳐 두 글자 이상 모인 삼합·방합은 없습니다.")}</ul><p><b>완성된 삼합</b></p><ul>${list(r.triadRelations,"두 사람의 지지를 합쳐 완성되는 삼합은 확인되지 않았습니다.")}</ul><p><b>방합</b></p><ul>${list(r.directionRelations,"두 사람의 지지를 합쳐 완성되는 방합은 확인되지 않았습니다.")}</ul><p><b>암합 · 대표 정기 기준(5쌍)</b></p><ul>${list(r.amhapPrimary,"대표 정기 기준에서 확인된 교차 암합이 없습니다.")}</ul><p><b>암합 · 별도 전승 기준(4쌍)</b></p><ul>${list(r.amhapAlternate,"별도 전승 기준에서 확인된 교차 암합이 없습니다.")}</ul><p class="muted">대표 기준은 자술·축인·묘신·인미·오해의 다섯 쌍을, 별도 전승 기준은 술해·축인·진사·미신의 네 쌍을 표시합니다. 두 기준은 서로 다른 분류이므로 중복 관계를 점수에 더하지 않으며, 암합은 합화나 관계의 성패를 확정하지 않습니다. 이 리포트는 지지와 지지 사이의 암합만 다루며, 천간-지지 암합은 학파별 기준 차이로 계산에 포함하지 않았습니다.</p><p class="muted">반합은 삼합국의 세 글자 중 두 글자가 교차 원국에서 만나는 경우로 표시합니다. 완성된 삼합·방합은 두 사람의 지지 전체에서 세 글자가 모두 확인될 때만 표시합니다.</p>
  <h3>4. 충·형·파·해: 갈등이 생길 수 있는 지점</h3><p>아래 항목은 두 사람의 어떤 기둥 사이에서 관계가 포착되었는지를 보여줍니다. 기둥의 위치에 따라 생활 영역의 해석이 달라질 수 있으므로 관계 이름만으로 결과를 단정하지 않습니다.</p><p><b>충</b></p><ul>${list(groups["충"],"현재 비교에서 확인된 지지 충이 없습니다.")}</ul><p><b>형·파·해·자형</b></p><ul>${list([...groups["형"],...groups["파"],...groups["해"],...groups["자형"]],"현재 비교에서 확인된 형·파·해·자형이 없습니다.")}</ul><p><b>원진</b></p><ul>${list(groups["원진"],"현재 비교에서 확인된 원진 관계가 없습니다.")}</ul><p>원진은 전통 명리에서 감정적 서운함이나 오해가 반복될 가능성을 살피는 보조 관계입니다. 원진 하나만으로 관계의 성패를 판단하지 않습니다.</p><p>이런 관계는 서로의 생활 리듬이나 문제를 해결하는 방식이 다를 수 있음을 점검하라는 신호로 읽는 편이 좋습니다. 충은 차이와 변화, 형은 반복되는 긴장, 파는 계획이나 약속의 어긋남, 해는 서운함이 쌓이는 상황을 돌아보는 질문으로 활용할 수 있습니다. 이는 상징적 해석이며 실제 갈등을 예언하는 것은 아닙니다.</p>
- <h3>5. ${year}년 세운의 양방향 궁합</h3><p>세운은 ${escapeHTML(annualA.year)}입니다. 본인 세운과 상대방 원국의 관계, 상대방 세운과 본인 원국의 관계, 두 사람 세운끼리의 관계를 나누어 확인합니다.</p><h4>본인 세운 → 상대방 원국</h4><ul>${list(annualAB,"직접 확인되는 천간합·천간충·지지 관계가 없습니다.")}</ul><h4>상대방 세운 → 본인 원국</h4><ul>${list(annualBA,"직접 확인되는 천간합·천간충·지지 관계가 없습니다.")}</ul><h4>두 사람 세운끼리</h4><ul>${list(annualPair,"두 사람 세운 사이에 직접 확인되는 관계가 없습니다.")}</ul><p class="muted">선택 연도의 7월 1일을 기준으로 연주를 산출합니다. 연주는 입춘을 경계로 바뀌므로 1월부터 입춘 전까지는 실제 날짜 기준 연주가 다를 수 있습니다. 세운의 관계는 원국·대운·월운을 함께 보아야 하며 길흉을 단독 판정하지 않습니다.</p>
- <h3>6. 두 사람의 대운이 상대방 원국에 미치는 관계</h3><p>각자의 대운을 상대방의 원국과 양방향으로 대조합니다. 아래 관계는 대운 천간·지지가 상대방의 네 기둥과 맺는 합·충·형·파·해·원진의 접점을 보여주는 참고 자료이며, 관계의 미래나 특정 사건을 예언하지 않습니다.</p><h4>본인의 대운 → 상대방 원국</h4><ul>${list(r.luckAtoB.flatMap(x=>[...x.stemHits,...x.branchHits].map(v=>x.age+"세 "+x.pillar+": "+v)),"현재 엔진이 제공한 본인 대운과 상대방 원국 사이에서 표시할 직접 관계가 없습니다.")}</ul><h4>상대방의 대운 → 본인 원국</h4><ul>${list(r.luckBtoA.flatMap(x=>[...x.stemHits,...x.branchHits].map(v=>x.age+"세 "+x.pillar+": "+v)),"현재 엔진이 제공한 상대방 대운과 본인 원국 사이에서 표시할 직접 관계가 없습니다.")}</ul><p class="muted">대운 시작 나이는 만세력 엔진이 제공한 값을 그대로 사용합니다. 현재 구현은 각자의 대운과 상대방 원국의 교차 관계를 계산합니다. 대운끼리의 직접 관계와 특정 연도 세운까지 포함한 동시점 분석은 아직 별도 구현 대상이며, 계산하지 않은 구간을 결과에 포함한 것처럼 표시하지 않습니다.</p>
- <h3>7. 의견이 다를 때 도움이 되는 소통 방법</h3><ul><li>상대의 의도를 추측하기보다 무엇이 불편했는지 구체적인 행동을 중심으로 말해 주세요.</li><li>감정이 격해졌을 때는 결론을 서두르지 말고 대화를 다시 시작할 시간을 정해 두세요.</li><li>한 번에 모든 문제를 해결하려 하기보다 지금 다룰 문제 하나에 집중하세요.</li><li>서로 다른 생활 속도와 연락 빈도를 미리 합의하면 사소한 오해를 줄일 수 있습니다.</li><li>사과가 필요할 때는 변명보다 상대가 겪은 불편을 먼저 인정하고, 다음 행동을 함께 정하는 것이 좋습니다.</li></ul>
- <h3>8. 합과 충을 함께 본 관계의 장점과 과제</h3><p>현재 확인된 천간합·육합·반합·삼합·방합 관계는 ${harmony}건, 천간충·지지 충형파해 관계는 ${tension}건입니다. 다만 관계의 개수를 단순 비교해 궁합의 점수로 환산할 수는 없습니다. 어느 기둥에서 나타났는지, 다른 합충과 겹치는지, 각자의 원국에서 해당 글자가 어떤 역할을 하는지가 더 중요합니다.</p><p>두 사람의 장점은 서로 다른 관점과 생활 방식을 통해 새로운 균형을 배울 수 있다는 데 있습니다. 과제는 차이를 상대의 잘못으로 해석하지 않고, 실제 생활에서 조정할 수 있는 약속으로 바꾸는 것입니다.</p>
- <h3>9. 관계를 부드럽게 만드는 명리학적·생활 조언</h3><p>명리학적으로는 한쪽의 기운이 다른 쪽을 일방적으로 채워 준다고 보기보다, 각자의 원국에서 필요한 기운이 무엇인지 먼저 살피는 것이 중요합니다. 서로에게 없는 오행을 무조건 보충하려 하기보다 그 기운이 두 사람 모두에게 편안하게 작용하는지 확인해야 합니다.</p><p>생활에서는 잘 맞는 순간을 늘리는 것만큼 갈등이 생겼을 때 회복하는 방식을 만드는 것이 중요합니다. 고마움은 구체적으로 표현하고, 약속은 지킬 수 있는 수준으로 정하며, 다툼 뒤에는 누가 이겼는지가 아니라 무엇을 바꿀지를 함께 정해 보세요.</p><div class="notice">이 리포트는 계산된 원국과 현재 구현된 관계 비교를 쉽게 설명한 참고 해석입니다. 암합은 대표 정기 기준과 별도 전승 기준을 나누어 표시하며, 원진 및 합화의 정밀 판정에는 학파별 차이가 남아 있습니다. 반합·삼합·방합은 현재 구현한 교차 지지 규칙에 따라 표시하며, 학파별 차이가 있을 수 있습니다. 궁합은 관계의 미래를 확정하지 않으며 실제 관계는 두 분의 선택과 행동에 달려 있습니다.</div>`);
+ <h3>5. ${year}년 세운의 양방향 궁합</h3><p>세운은 ${escapeHTML(annualA.year)}입니다. 본인 세운과 상대방 원국의 관계, 상대방 세운과 본인 원국의 관계, 두 사람 세운끼리의 관계를 나누어 확인합니다.</p><h4>본인 세운 → 상대방 원국</h4><ul>${list(annualAB,"직접 확인되는 천간합·천간충·지지 관계가 없습니다.")}</ul><h4>상대방 세운 → 본인 원국</h4><ul>${list(annualBA,"직접 확인되는 천간합·천간충·지지 관계가 없습니다.")}</ul><h4>두 사람 세운끼리</h4><ul>${list(annualPair,"두 사람 세운 사이에 직접 확인되는 관계가 없습니다.")}</ul><p class="muted">선택 연도의 3월 1일을 대표일로 삼아 입춘 이후 연주를 산출합니다. 입춘 전 날짜의 연주는 실제 날짜별 계산이 필요합니다. 세운의 관계는 원국·대운·월운을 함께 보아야 하며 길흉을 단독 판정하지 않습니다.</p>
+ <h3>6. 두 사람의 대운이 상대방 원국에 미치는 관계</h3><p>각자의 대운을 상대방의 원국과 양방향으로 대조합니다. 아래 관계는 대운 천간·지지가 상대방의 네 기둥과 맺는 합·충·형·파·해·원진의 접점을 보여주는 참고 자료이며, 관계의 미래나 특정 사건을 예언하지 않습니다.</p><h4>본인의 대운 → 상대방 원국</h4><ul>${list(r.luckAtoB.flatMap(x=>[...x.stemHits,...x.branchHits].map(v=>x.age+"세 "+x.pillar+": "+v)),"현재 엔진이 제공한 본인 대운과 상대방 원국 사이에서 표시할 직접 관계가 없습니다.")}</ul><h4>상대방의 대운 → 본인 원국</h4><ul>${list(r.luckBtoA.flatMap(x=>[...x.stemHits,...x.branchHits].map(v=>x.age+"세 "+x.pillar+": "+v)),"현재 엔진이 제공한 상대방 대운과 본인 원국 사이에서 표시할 직접 관계가 없습니다.")}</ul><p class="muted">대운 시작 나이는 만세력 엔진이 제공한 값을 그대로 사용합니다. 현재 구현은 각자의 대운과 상대방 원국의 교차 관계를 계산합니다. 아래 7절에서는 각자의 대운 시작 시점을 양력 날짜로 환산해 실제 기간이 겹치는 구간만 별도로 대조합니다.</p><h3>7. 같은 시기의 대운끼리 비교</h3><p>각자의 대운은 출생일과 엔진이 제공한 시작 나이 세부값(년·월·일)을 바탕으로 대략적인 달력 구간으로 환산했습니다. 두 사람의 기간이 겹치는 구간에서 대운 천간합·천간충과 지지 관계를 확인합니다.</p>${simultaneousHTML}<p class="muted">이 구간은 3일=1년·1일=4개월 환산에 따른 근사 시작일이며, 대운 교체의 정확한 시각을 뜻하지 않습니다. ${simultaneousNote} 음력 생일은 만세력 엔진의 양력 변환값을 사용합니다. 합·충 관계만으로 특정 사건이나 관계의 길흉을 예언하지 않습니다.</p>
+ <h3>8. 의견이 다를 때 도움이 되는 소통 방법</h3><ul><li>상대의 의도를 추측하기보다 무엇이 불편했는지 구체적인 행동을 중심으로 말해 주세요.</li><li>감정이 격해졌을 때는 결론을 서두르지 말고 대화를 다시 시작할 시간을 정해 두세요.</li><li>한 번에 모든 문제를 해결하려 하기보다 지금 다룰 문제 하나에 집중하세요.</li><li>서로 다른 생활 속도와 연락 빈도를 미리 합의하면 사소한 오해를 줄일 수 있습니다.</li><li>사과가 필요할 때는 변명보다 상대가 겪은 불편을 먼저 인정하고, 다음 행동을 함께 정하는 것이 좋습니다.</li></ul>
+ <h3>9. 합과 충을 함께 본 관계의 장점과 과제</h3><p>현재 확인된 천간합·육합·반합·삼합·방합 관계는 ${harmony}건, 천간충·지지 충형파해 관계는 ${tension}건입니다. 다만 관계의 개수를 단순 비교해 궁합의 점수로 환산할 수는 없습니다. 어느 기둥에서 나타났는지, 다른 합충과 겹치는지, 각자의 원국에서 해당 글자가 어떤 역할을 하는지가 더 중요합니다.</p><p>두 사람의 장점은 서로 다른 관점과 생활 방식을 통해 새로운 균형을 배울 수 있다는 데 있습니다. 과제는 차이를 상대의 잘못으로 해석하지 않고, 실제 생활에서 조정할 수 있는 약속으로 바꾸는 것입니다.</p>
+ <h3>10. 관계를 부드럽게 만드는 명리학적·생활 조언</h3><p>명리학적으로는 한쪽의 기운이 다른 쪽을 일방적으로 채워 준다고 보기보다, 각자의 원국에서 필요한 기운이 무엇인지 먼저 살피는 것이 중요합니다. 서로에게 없는 오행을 무조건 보충하려 하기보다 그 기운이 두 사람 모두에게 편안하게 작용하는지 확인해야 합니다.</p><p>생활에서는 잘 맞는 순간을 늘리는 것만큼 갈등이 생겼을 때 회복하는 방식을 만드는 것이 중요합니다. 고마움은 구체적으로 표현하고, 약속은 지킬 수 있는 수준으로 정하며, 다툼 뒤에는 누가 이겼는지가 아니라 무엇을 바꿀지를 함께 정해 보세요.</p><div class="notice">이 리포트는 계산된 원국과 현재 구현된 관계 비교를 쉽게 설명한 참고 해석입니다. 암합은 대표 정기 기준과 별도 전승 기준을 나누어 표시하며, 원진 및 합화의 정밀 판정에는 학파별 차이가 남아 있습니다. 반합·삼합·방합은 현재 구현한 교차 지지 규칙에 따라 표시하며, 학파별 차이가 있을 수 있습니다. 궁합은 관계의 미래를 확정하지 않으며 실제 관계는 두 분의 선택과 행동에 달려 있습니다.</div>`);
 }
 
 // ---- 운결 AI 운명술사 상담 ----
@@ -621,7 +707,8 @@ async function sendAIQuestion(prefill){
  finally{btn.disabled=false;input.focus();}
 }
 
-function init(){const y=$("fortuneYear");const switchPane=name=>{for(const [tab,pane] of [["personalTab","personalPane"],["savedTab","savedPane"],["compatTab","compatPane"],["aiTab","aiPane"]]){$(tab).classList.toggle("active",tab===name+"Tab");$(pane).classList.toggle("active",pane===name+"Pane");}};$("personalTab").addEventListener("click",()=>switchPane("personal"));$("savedTab").addEventListener("click",()=>switchPane("saved"));$("compatTab").addEventListener("click",()=>switchPane("compat"));$("aiTab").addEventListener("click",()=>switchPane("ai"));$("compatReportButton").addEventListener("click",compatFullReport);const now=new Date().getFullYear();for(let n=now-5;n<=now+10;n++){const o=document.createElement("option");o.value=n;o.textContent=n+"년";if(n===now)o.selected=true;y.append(o);}for(const [id,fields] of [["timeMode",["hourField","minuteField"]],["partnerTimeMode",["partnerHourField","partnerMinuteField"]]]){const sync=()=>fields.forEach(field=>$(field).classList.toggle("hidden",$(id).value==="unknown"));$(id).addEventListener("change",sync);sync();}for(const [id,field] of [["calendarType","leapField"],["partnerCalendar","partnerLeapField"]]){$(id).addEventListener("change",()=>$(field).classList.toggle("hidden",$(id).value!=="lunar"));$(field).classList.toggle("hidden",$(id).value!=="lunar");}$("calculateButton").addEventListener("click",calculateMain);$("saveChartButton").addEventListener("click",saveCurrentChart);$("savedChartList").addEventListener("click",handleSavedChartAction);$("savedSearch").addEventListener("input",renderSavedCharts);renderSavedCharts();$("compatibilityButton").addEventListener("click",calcPartner);$("fortuneButton").addEventListener("click",calcYear);$("fullReportButton").addEventListener("click",fullReport);$("printButton").addEventListener("click",()=>window.print());$("aiSendButton").addEventListener("click",()=>sendAIQuestion());$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAIQuestion();}});document.querySelectorAll("[data-ai-question]").forEach(b=>b.addEventListener("click",()=>sendAIQuestion(b.dataset.aiQuestion)));}
+function init(){const y=$("fortuneYear");const switchPane=name=>{for(const [tab,pane] of [["personalTab","personalPane"],["savedTab","savedPane"],["compatTab","compatPane"],["aiTab","aiPane"]]){$(tab).classList.toggle("active",tab===name+"Tab");$(pane).classList.toggle("active",pane===name+"Pane");}};$("personalTab").addEventListener("click",()=>switchPane("personal"));$("savedTab").addEventListener("click",()=>switchPane("saved"));$("compatTab").addEventListener("click",()=>switchPane("compat"));$("aiTab").addEventListener("click",()=>switchPane("ai"));$("compatReportButton").addEventListener("click",compatFullReport);const now=new Date().getFullYear();for(let n=now-5;n<=now+10;n++){const o=document.createElement("option");o.value=n;o.textContent=n+"년";if(n===now)o.selected=true;y.append(o);}for(const [id,field] of [["timeMode","hourField"],["partnerTimeMode","partnerHourField"]]){const sync=()=>$(field).classList.toggle("hidden",$(id).value==="unknown");$(id).addEventListener("change",sync);sync();}
+ for(const [check,field,mode] of [["trueSolarEnabled","longitudeField","timeMode"],["partnerTrueSolarEnabled","partnerLongitudeField","partnerTimeMode"]]){const sync=()=>$(field).classList.toggle("hidden",!$(check).checked||$(mode).value==="unknown");$(check).addEventListener("change",sync);$(mode).addEventListener("change",sync);sync();}for(const [id,field] of [["calendarType","leapField"],["partnerCalendar","partnerLeapField"]]){$(id).addEventListener("change",()=>$(field).classList.toggle("hidden",$(id).value!=="lunar"));$(field).classList.toggle("hidden",$(id).value!=="lunar");}$("calculateButton").addEventListener("click",calculateMain);$("saveChartButton").addEventListener("click",saveCurrentChart);$("savedChartList").addEventListener("click",handleSavedChartAction);$("savedSearch").addEventListener("input",renderSavedCharts);renderSavedCharts();$("compatibilityButton").addEventListener("click",calcPartner);$("fortuneButton").addEventListener("click",calcYear);$("fullReportButton").addEventListener("click",fullReport);$("printButton").addEventListener("click",()=>window.print());$("aiSendButton").addEventListener("click",()=>sendAIQuestion());$("aiQuestion").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAIQuestion();}});document.querySelectorAll("[data-ai-question]").forEach(b=>b.addEventListener("click",()=>sendAIQuestion(b.dataset.aiQuestion)));}
 init();
 </script>
 <script>
