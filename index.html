@@ -337,15 +337,25 @@ function finalizeYongshin(obj){
  if(u.climate.temp>=1.5||u.climate.moist<=-1.0)add("수",2.4,"조열을 식히고 적시는 조후 필요");
  // 4) 통관: 실제 상극 양쪽이 함께 강하고 매개 오행이 있을 때 보조 가점
  for(const b of u.bridge)if(b.present)add(b.element,1.0,"실제 상극 구조의 통관 가능성");
- // 동점이면 월령 본기, 조후, 억부 순으로 안정적으로 선택
+ // 동점이면 월령 본기, 조후, 억부, 통관 순으로 검토 우선순위를 적용
  const order=["목","화","토","금","수"];
- const ranked=order.map(element=>({element,score:+scores[element].toFixed(2),reasons:reasons[element]})).sort((a,b)=>b.score-a.score||order.indexOf(a.element)-order.indexOf(b.element));
+ const tiePriority=element=>{
+  const why=reasons[element];
+  if(why.some(x=>x.startsWith("월령 본기")))return 0;
+  if(why.some(x=>x.startsWith("한습")||x.startsWith("조열")))return 1;
+  if(why.some(x=>x.includes("억부")))return 2;
+  if(why.some(x=>x.includes("통관")))return 3;
+  return 4;
+ };
+ const ranked=order.map(element=>({element,score:+scores[element].toFixed(2),reasons:reasons[element]}))
+  .sort((a,b)=>b.score-a.score||tiePriority(a.element)-tiePriority(b.element)||order.indexOf(a.element)-order.indexOf(b.element));
  const best=ranked[0],second=ranked[1],margin=best.score-second.score;
- const confidence=best.score>=4&&margin>=1.5?"비교적 뚜렷":best.score>=2.2&&margin>=.6?"중간":"잠정";
- return {...u,finalYongshin:best.element,finalScore:best.score,confidence,ranked,reasons:best.reasons,
-  favorable:[best.element,...ranked.slice(1).filter(x=>x.score>=best.score-1.2).map(x=>x.element)],
-  unfavorable:ranked.filter(x=>x.score<=best.score-2).map(x=>x.element),
-  finalNote:"최종 용신은 자평진전의 월령·격국 구조를 먼저 살피고, 적천수 계열의 억부와 궁통보감의 조후를 교차 검증한 운결의 통합 판정입니다. 세 고전의 단일 합의나 학계의 객관적 정답을 뜻하지 않으며, 현재 강약·기후 수치는 근사 지표이므로 격국 성패와 합화·회국을 정밀하게 확정하지 못한 경우 잠정 판정으로 표시합니다."};
+ const hasEvidence=best.score>0;
+ const confidence=!hasEvidence?"자료 부족":best.score>=4&&margin>=1.5?"비교적 뚜렷":best.score>=2.2&&margin>=.6?"중간":"잠정";
+ return {...u,finalYongshin:hasEvidence?best.element:"판정 보류",finalScore:best.score,confidence,ranked,reasons:best.reasons,
+  favorable:hasEvidence?[best.element,...ranked.slice(1).filter(x=>x.score>0&&x.score>=best.score-1.2).map(x=>x.element)]:[],
+  unfavorable:hasEvidence?ranked.filter(x=>x.score>0&&x.score<=best.score-2).map(x=>x.element):[],
+  finalNote:hasEvidence?"운결은 월령·격국 구조를 먼저 살피고, 억부와 조후를 교차 검토한 뒤 통관 가능성을 보조 반영합니다. 이는 전통 명리의 단일 합의나 학계의 객관적 정답이 아니며, 현재 강약·기후 수치는 근사 지표이므로 격국 성패와 합화·회국을 정밀하게 확정하지 못한 경우 잠정 판정으로 표시합니다.":"현재 구현된 격국·억부·조후·통관 기준에서 뚜렷한 점수 근거가 없어 용신 후보를 임의로 고르지 않고 판정을 보류합니다. 월령의 왕쇠, 통근, 투출, 합충 및 대운을 별도로 검토해야 합니다."};
 }
 function escapeHTML(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function show(id,html){$(id).innerHTML=html;}
@@ -421,7 +431,7 @@ async function calculateMain(){
  try{const calc=await loadEngine(),input=buildInput(),result=calc({...input}),obj={...result.toObject(),__unknownTime:input.unknown,__luckTimingApprox:input.unknown,__trueSolarTime:!!input.trueSolarTime,__dayBoundary:input.dayBoundary,__dayBoundaryUnknown:input.unknown};
  natalResult=result;natalObj=obj;renderChart(obj,input.unknown);renderBasic(obj);renderLuck(result);
  $("status").innerHTML='<span class="ok">계산이 완료되었습니다.</span>'+(input.unknown?' <span class="sub">출생 시각 미상: 시주는 제외하고 자시 경계는 당일 일주 임시 기준으로 처리했습니다. 대운 시작 시점은 정오 임시값에 따른 추정입니다.</span>':'');
- }catch(e){show("chartReport","계산 결과가 없습니다. 입력값과 만세력 연결을 확인해 주세요.");show("strengthReport","");show("structureReport","");show("climateReport","");show("usefulReport","");show("luckReport","");$("status").innerHTML=`<span class="error">${escapeHTML(e.message||e)}</span>`;}
+ }catch(e){show("chartReport","계산 결과가 없습니다. 입력값과 만세력 연결을 확인해 주세요.");show("strengthReport","");show("structureReport","");show("voidReport","");show("climateReport","");show("usefulReport","");show("luckReport","");$("status").innerHTML=`<span class="error">${escapeHTML(e.message||e)}</span>`;}
  finally{btn.disabled=false;}
 }
 
