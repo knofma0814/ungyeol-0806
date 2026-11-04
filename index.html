@@ -56,7 +56,7 @@ button,input,select{min-height:44px}
 <div class="field hidden" id="leapField"><label for="leapMonth">윤달 여부</label><select id="leapMonth"><option value="false">평달</option><option value="true">윤달</option></select></div>
 <div class="field"><label for="gender">성별</label><select id="gender"><option value="male">남성</option><option value="female">여성</option></select></div>
 <div class="field"><label for="timeMode">출생 시간</label><select id="timeMode"><option value="known">시간 알고 있음</option><option value="unknown">시간 모름</option></select></div>
-<div class="field" id="hourField"><label for="birthTime">출생 시각 (24시간제·KST)</label><input id="birthTime" type="time" step="60" value="12:00"></div>
+<div class="field" id="hourField"><label for="birthTime">출생 시각 (24시간제·KST)</label><input id="birthTime" type="time" min="00:00" max="23:59" step="60" value="12:00"><span class="sub">12지시: 자 23:00~00:59 · 축 01:00~02:59 · 인 03:00~04:59 · 묘 05:00~06:59 · 진 07:00~08:59 · 사 09:00~10:59 · 오 11:00~12:59 · 미 13:00~14:59 · 신 15:00~16:59 · 유 17:00~18:59 · 술 19:00~20:59 · 해 21:00~22:59</span></div>
 <div class="field"><label><input id="trueSolarEnabled" type="checkbox" style="width:auto;margin-right:6px">진태양시 보정 사용</label><span class="sub">출생지 경도와 균시차를 반영합니다.</span></div>
 <div class="field hidden" id="longitudeField"><label for="birthLongitude">출생지 경도 (° 동경 + / 서경 -)</label><input id="birthLongitude" type="number" min="-180" max="180" step="0.001" placeholder="예: 서울 126.978"></div>
 <div class="field"><label for="dayBoundary">자시 일주 기준</label><select id="dayBoundary"><option value="midnight">자정 기준</option><option value="jasi">자시 기준</option><option value="splitJasi">야자시 분리</option></select></div>
@@ -93,7 +93,7 @@ button,input,select{min-height:44px}
 <div class="field hidden" id="partnerLeapField"><label for="partnerLeap">윤달 여부</label><select id="partnerLeap"><option value="false">평달</option><option value="true">윤달</option></select></div>
 <div class="field"><label for="partnerGender">성별</label><select id="partnerGender"><option value="female">여성</option><option value="male">남성</option></select></div>
 <div class="field"><label for="partnerTimeMode">출생 시간</label><select id="partnerTimeMode"><option value="known">시간 알고 있음</option><option value="unknown">시간 모름</option></select></div>
-<div class="field" id="partnerHourField"><label for="partnerTime">출생 시각 (24시간제·KST)</label><input id="partnerTime" type="time" step="60" value="12:00"></div>
+<div class="field" id="partnerHourField"><label for="partnerTime">출생 시각 (24시간제·KST)</label><input id="partnerTime" type="time" min="00:00" max="23:59" step="60" value="12:00"><span class="sub">12지시: 자 23:00~00:59 · 축 01:00~02:59 · 인 03:00~04:59 · 묘 05:00~06:59 · 진 07:00~08:59 · 사 09:00~10:59 · 오 11:00~12:59 · 미 13:00~14:59 · 신 15:00~16:59 · 유 17:00~18:59 · 술 19:00~20:59 · 해 21:00~22:59</span></div>
 <div class="field"><label><input id="partnerTrueSolarEnabled" type="checkbox" style="width:auto;margin-right:6px">진태양시 보정 사용</label><span class="sub">출생지 경도와 균시차를 반영합니다.</span></div>
 <div class="field hidden" id="partnerLongitudeField"><label for="partnerLongitude">출생지 경도 (° 동경 + / 서경 -)</label><input id="partnerLongitude" type="number" min="-180" max="180" step="0.001" placeholder="예: 서울 126.978"></div>
 <div class="field"><label for="partnerBoundary">자시 일주 기준</label><select id="partnerBoundary"><option value="midnight">자정 기준</option><option value="jasi">자시 기준</option><option value="splitJasi">야자시 분리</option></select></div>
