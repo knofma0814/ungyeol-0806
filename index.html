@@ -299,12 +299,16 @@ function analyzePattern(obj){
   exposedHidden:candidates.filter(x=>x.exposed),exposedPriority,patternType,establishment,breakFactors,statusDetail,
   note:"격국 후보는 월령 본기·중기·여기의 십성과 투출을 구분해 제시합니다. 파격 단서는 월지의 형충파해 및 투출 우선순위로 표시하지만, 실제 성격은 구응·제화·회국·합화·격국별 성패 기준과 학파 차이를 함께 검토해야 하므로 자동 확정하지 않습니다."};
 }
+function tenGodGroup(god){
+ const groups={"비견":"비겁","겁재":"비겁","정인":"인성","편인":"인성","식신":"식상","상관":"식상","정재":"재성","편재":"재성","정관":"관성","편관(칠살)":"관성"};
+ return groups[god]||god;
+}
 function analyzeUseful(obj){
  const base=analyzeStrength(obj);if(base.error)return base;
  const climate=analyzeClimate(obj),structure=analyzeStructure(obj),pattern=analyzePattern(obj);
  const day=base.day,ratio=base.ratio;
  const supportSide=ratio>=.58?"신강 쪽":ratio<=.42?"신약 쪽":"중화 범위";
- const elementForGod=(god)=>Object.keys(base.c).find(e=>elementRelation(day,e)===god)||"";
+ const elementForGod=(god)=>Object.keys(base.c).find(e=>elementRelation(day,e)===tenGodGroup(god))||"";
  const suppression=ratio>=.58?["식상","재성","관성"].map(elementForGod).filter(Boolean):ratio<=.42?["인성","비겁"].map(elementForGod).filter(Boolean):[];
  const avoid=ratio>=.58?["인성","비겁"].map(elementForGod).filter(Boolean):ratio<=.42?["식상","재성","관성"].map(elementForGod).filter(Boolean):[];
  const climateCandidates=climate.cand.map(element=>({element,reason:element==="화"?[climate.temp<=-.8?"한랭 완화":null,climate.moist>=.5?"습윤 완화":null].filter(Boolean).join("·"):[climate.temp>=.8?"열기 완화":null,climate.moist<=-.5?"건조 완화":null].filter(Boolean).join("·")}));
@@ -324,7 +328,7 @@ function finalizeYongshin(obj){
  const u=analyzeUseful(obj);if(u.error)return u;
  const scores={목:0,화:0,토:0,금:0,수:0},reasons={목:[],화:[],토:[],금:[],수:[]};
  const add=(el,points,why)=>{if(scores[el]!==undefined){scores[el]+=points;reasons[el].push(why);}};
- const day=u.day,elForGod=god=>Object.keys(scores).find(e=>elementRelation(day,e)===god)||"";
+ const day=u.day,elForGod=god=>Object.keys(scores).find(e=>elementRelation(day,e)===tenGodGroup(god))||"";
  // 1) 격국: 월령 본기와 투출을 우선하되, 자동 성격 판정이 아닌 구조적 가점으로만 반영
  const main=u.pattern.main,patternElement=main?.god?elForGod(main.god):"";
  if(patternElement)add(patternElement,main.exposed?2.2:1.2,"월령 본기 십성의 구조적 우선성("+(main.exposed?"투출":"미투출")+")");
