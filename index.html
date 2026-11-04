@@ -356,7 +356,7 @@ function buildInput(prefix=""){
  const timeValue=get("birthTime","partnerTime").value||"12:00",[hourText,minuteText]=timeValue.split(":");
  const hour=unknown?12:Number(hourText),minute=unknown?0:Number(minuteText),dayBoundary=unknown?"midnight":get("dayBoundary","partnerBoundary").value;
  const solarEnabled=get("trueSolarEnabled","partnerTrueSolarEnabled").checked&&!unknown,longitude=Number(get("birthLongitude","partnerLongitude").value);
- if(solarEnabled&&(!Number.isFinite(longitude)||longitude<90||longitude>150))throw Error("진태양시 보정을 사용하려면 출생지 경도를 -180~180도 범위로 입력해 주세요.");
+ if(solarEnabled&&(!Number.isFinite(longitude)||longitude< -180||longitude>180))throw Error("진태양시 보정을 사용하려면 출생지 경도를 -180~180도 범위로 입력해 주세요.");
  return {year,month,day,hour,minute,isLunar:get("calendarType","partnerCalendar").value==="lunar",isLeapMonth:get("leapMonth","partnerLeap").value==="true",gender:get("gender","partnerGender").value,dayBoundary,...(solarEnabled?{trueSolarTime:{longitude,applyEquationOfTime:true,applyHistoricalDst:true}}:{}),unknown};
 }
 async function loadEngine(){if(engine)return engine;const mod=await import("https://esm.sh/manseryeok@2.0.0");if(typeof mod.calculateFourPillars!=="function")throw Error("만세력 엔진에서 계산 함수를 찾지 못했습니다.");engine=mod.calculateFourPillars;return engine;}
@@ -535,7 +535,7 @@ async function calcYear(){
    return out;
   });
   const stage=twelveStage(day.stem,p.branch);
-  show("yearReport",`<h3>${year}년 세운 ${escapeHTML(obj.year)}</h3><p><b>세운 천간:</b> ${p.stem}(${STEM_ELEMENT[p.stem]}) · 일간 기준 십성 <b>${god}</b></p><p><b>세운 지지:</b> ${p.branch} · 일간 기준 십이운성 <b>${stage}</b></p><p><b>세운 천간과 원국의 합·충</b></p><ul>${stemRelations.length?stemRelations.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>원국 천간과 직접 확인되는 천간합·천간충이 없습니다.</li>"}</ul><p><b>세운 지지와 원국의 합·충·형·파·해·원진</b></p><ul>${interactions.length?interactions.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>현재 원국 지지와 직접 확인되는 관계가 없습니다.</li>"}</ul><p><b>세운 천간의 오행 관계:</b> ${elementRelation(STEM_ELEMENT[day.stem],STEM_ELEMENT[p.stem])}</p><p class="muted">선택 연도의 7월 1일을 기준으로 만세력 엔진에서 연주를 가져옵니다. 연주는 입춘을 경계로 바뀌므로 1~2월 초의 실제 날짜 적용은 별도 확인이 필요합니다. 세운 지지는 일간 기준 십이운성으로 표시하며, 길흉은 원국·대운·용신을 함께 보아야 합니다. 합충 한두 개만으로 사건을 예측하지 않습니다.</p>`);
+  show("yearReport",`<h3>${year}년 세운 ${escapeHTML(obj.year)}</h3><p><b>세운 천간:</b> ${p.stem}(${STEM_ELEMENT[p.stem]}) · 일간 기준 십성 <b>${god}</b></p><p><b>세운 지지:</b> ${p.branch} · 일간 기준 십이운성 <b>${stage}</b></p><p><b>세운 천간과 원국의 합·충</b></p><ul>${stemRelations.length?stemRelations.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>원국 천간과 직접 확인되는 천간합·천간충이 없습니다.</li>"}</ul><p><b>세운 지지와 원국의 합·충·형·파·해·원진</b></p><ul>${interactions.length?interactions.map(x=>"<li>"+escapeHTML(x)+"</li>").join(""):"<li>현재 원국 지지와 직접 확인되는 관계가 없습니다.</li>"}</ul><p><b>세운 천간의 오행 관계:</b> ${elementRelation(STEM_ELEMENT[day.stem],STEM_ELEMENT[p.stem])}</p><p class="muted">선택 연도의 3월 1일을 대표일로 삼아 만세력 엔진에서 입춘 이후 연주를 가져옵니다. 세운은 연 단위 대표값이며 1월~입춘 전 실제 날짜의 연주는 해당 날짜의 입춘 절입 시각을 기준으로 별도 판정해야 합니다. 세운 지지는 일간 기준 십이운성으로 표시하며, 길흉은 원국·대운·용신을 함께 보아야 합니다. 합충 한두 개만으로 사건을 예측하지 않습니다.</p>`);
  }catch(e){show("yearReport",`<span class="error">${escapeHTML(e.message||e)}</span>`);}
 }
 function fullReport(){
